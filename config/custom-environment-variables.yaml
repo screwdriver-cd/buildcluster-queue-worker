@@ -1,0 +1,184 @@
+# All values in this document are the ENVIRONMENT variable names that can override the defaults
+# from `default.yaml`
+---
+executor:
+    plugin: EXECUTOR_PLUGIN
+    # The NPM module object(s) for the executor plugin(s)
+    k8s:
+      options:
+        kubernetes:
+            # The host or IP of the kubernetes cluster
+            host: K8S_HOST
+            # The jwt token used for authenticating kubernetes requests
+            token: K8S_TOKEN
+            jobsNamespace: K8S_JOBS_NAMESPACE
+             # Resources for build pod
+            resources:
+                # Number of cpu cores
+                cpu:
+                    micro: K8S_CPU_MICRO
+                    low: K8S_CPU_LOW
+                    high: K8S_CPU_HIGH
+                    turbo: K8S_CPU_TURBO
+                # Memory in GB
+                memory:
+                    micro: K8S_MEMORY_MICRO
+                    low: K8S_MEMORY_LOW
+                    high: K8S_MEMORY_HIGH
+                    turbo: K8S_MEMORY_TURBO
+            # Default build timeout for all builds in this cluster
+            buildTimeout: K8S_BUILD_TIMEOUT
+            # Default max build timeout
+            maxBuildTimeout: K8S_MAX_BUILD_TIMEOUT
+            # k8s node selectors for approprate build pod scheduling.
+            # Value is Object of format { label: 'value' } See
+            # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#step-one-attach-label-to-the-node
+            # Eg: { dedicated: 'screwdriver' } to schedule pods on nodes having
+            # label-value of dedicated=screwdriver
+            nodeSelectors:
+              __name: K8S_NODE_SELECTORS
+              __format: json
+            # k8s preferred node selectors for build pod scheduling
+            # See https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity-beta-feature
+            preferredNodeSelectors:
+              __name: K8S_PREFERRED_NODE_SELECTORS
+              __format: json
+            # k8s annotations
+            # Value is Object of format { key: 'value' } See
+            # https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations
+            # Eg: {"io.kubernetes.cri.untrusted-workload": "true"}
+            annotations:
+              __name: K8S_ANNOTATIONS
+              __format: json
+        # Launcher image to use
+        launchImage: LAUNCH_IMAGE
+        # Launcher container tag to use
+        launchVersion: LAUNCH_VERSION
+        # Prefix to the pod
+        prefix: EXECUTOR_PREFIX
+        # Circuit breaker config
+        fusebox:
+            breaker:
+                # in milliseconds
+                timeout: CIRCUIT_TIMEOUT
+    k8s-vm:
+      options:
+        # Configuration of Docker
+        kubernetes:
+            # The host or IP of the kubernetes cluster
+            host: K8S_HOST
+            # The jwt token used for authenticating kubernetes requests
+            token: K8S_TOKEN
+            jobsNamespace: K8S_JOBS_NAMESPACE
+            baseImage: K8S_BASE_IMAGE
+            # Resources for build pod
+            resources:
+                # Number of cpu cores
+                cpu:
+                    micro: K8S_CPU_MICRO
+                    low: K8S_CPU_LOW
+                    high: K8S_CPU_HIGH
+                    turbo: K8S_CPU_TURBO
+                # Memory in GB
+                memory:
+                    micro: K8S_MEMORY_MICRO
+                    low: K8S_MEMORY_LOW
+                    high: K8S_MEMORY_HIGH
+                    turbo: K8S_MEMORY_TURBO
+                disk:
+                  high: K8S_DISK_LABEL
+            # Default build timeout for all builds in this cluster
+            buildTimeout: K8S_VM_BUILD_TIMEOUT
+            # Default max build timeout
+            maxBuildTimeout: K8S_VM_MAX_BUILD_TIMEOUT
+            # k8s node selectors for approprate build pod scheduling.
+            # Value is Object of format { label: 'value' } See
+            # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#step-one-attach-label-to-the-node
+            # Eg: { dedicated: 'screwdriver' } to schedule pods on nodes having
+            # label-value of dedicated=screwdriver
+            nodeSelectors:
+              __name: K8S_VM_NODE_SELECTORS
+              __format: json
+            # k8s preferred node selectors for build pod scheduling
+            # See https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity-beta-feature
+            preferredNodeSelectors:
+              __name: K8S_VM_PREFERRED_NODE_SELECTORS
+              __format: json
+        # Launcher image to use
+        launchImage: LAUNCH_IMAGE
+        # Launcher container tag to use
+        launchVersion: LAUNCH_VERSION
+        # Prefix to the container
+        prefix: EXECUTOR_PREFIX
+        # Circuit breaker config
+        fusebox:
+            breaker:
+                # in milliseconds
+                timeout: CIRCUIT_TIMEOUT
+    jenkins:
+      options:
+        jenkins:
+            host: EXECUTOR_JENKINS_HOST
+            port: EXECUTOR_JENKINS_PORT
+            username: EXECUTOR_JENKINS_USERNAME
+            # Jenkins password/token used for authenticating jenkins requests
+            password: EXECUTOR_JENKINS_PASSWORD
+            # Node labels of Jenkins slaves
+            nodeLabel: EXECUTOR_JENKINS_NODE_LABEL
+            # Default build timeout
+            buildTimeout: EXECUTOR_JENKINS_BUILD_TIMEOUT
+            # Default max build timeout
+            maxBuildTimeout: EXECUTOR_JENKINS_MAX_BUILD_TIMEOUT
+        docker:
+            # The path to the docker-compose command
+            composeCommand: EXECUTOR_JENKINS_DOCKER_COMPOSE_COMMAND
+            # Prefix to the container
+            prefix: EXECUTOR_JENKINS_DOCKER_PREFIX
+            # Launcher container tag to use
+            launchVersion: EXECUTOR_JENKINS_LAUNCH_VERSION
+            # Memory limit (docker run `--memory` option)
+            memory: EXECUTOR_JENKINS_DOCKER_MEMORY
+            # Memory limit include swap (docker run `--memory-swap` option)
+            memoryLimit: EXECUTOR_JENKINS_DOCKER_MEMORY_LIMIT
+        # The command to start build
+        buildScript: EXECUTOR_JENKINS_BUILD_SCRIPT
+        # The command to clean up build system
+        cleanupScript: EXECUTOR_JENKINS_CLEANUP_SCRIPT
+        # Time (seconds) to destroy the job
+        cleanupTimeLimit: EXECUTOR_JENKINS_CLEANUP_TIME_LIMIT
+        # Interval to detect the stopped job (seconds)
+        cleanupWatchInterval: EXECUTOR_JENKINS_CLEANUP_WATCH_INTERVAL
+
+ecosystem:
+    # URL for the User Interface
+    api: ECOSYSTEM_API
+    # Externally routable URL for the Artifact Store
+    store: ECOSYSTEM_STORE
+    # Pushgateway URL for Prometheus
+    pushgatewayUrl: ECOSYSTEM_PUSHGATEWAY_URL
+
+rabbitmq:
+    # Protocol for rabbitmq server, use amqps for ssl
+    protocol: RABBITMQ_PROTOCOL
+    # User to pull from rabbitmq
+    username: RABBITMQ_USERNAME
+    # Password to connect to rabbitmq cluster
+    password: RABBITMQ_PASSWORD
+    # Host of rabbitmq cluster
+    host: RABBITMQ_HOST
+    # Port of rabbitmq cluster
+    port: RABBITMQ_PORT
+    # Virtual Host for queues
+    vhost: RABBITMQ_VIRTUAL_HOST
+    # Connection options
+    connectOptions: RABBITMQ_CONNECT_OPTIONS
+    # Reconnect limit
+    reconnectLimit: RABBITMQ_RECONNECT_LIMIT
+    # Queue name to consume from
+    queue: RABBITMQ_QUEUE
+    # Queue options
+    queueOptions: RABBITMQ_QUEUE_OPTIONS
+    # Prefetch count
+    prefetchCount: RABBITMQ_PREFETCH_COUNT
+    # Message reprocess limit
+    messageReprocessLimit: RABBITMQ_MSG_REPROCESS_LIMIT

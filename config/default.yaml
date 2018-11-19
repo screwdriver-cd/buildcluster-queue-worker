@@ -1,0 +1,119 @@
+---
+executor:
+    # Default executor
+    plugin: k8s-vm
+    k8s:
+      options:
+        kubernetes:
+            # The host or IP of the kubernetes cluster
+            host: kubernetes.default
+            resources:
+                cpu:
+                    # Number of cpu cores
+                    micro: "0.5"
+                    low: 2
+                    high: 6
+                    turbo: 12
+                memory:
+                    # Memory in GB
+                    micro: 1
+                    low: 2
+                    high: 12
+                    turbo: 16
+            # Default build timeout for all builds in this cluster
+            buildTimeout: 90
+            # Default max build timeout
+            maxBuildTimeout: 120
+            # k8s node selectors for approprate pod scheduling
+            nodeSelectors: {}
+            preferredNodeSelectors: {}
+            annotations: {}
+        # Launcher image to use
+        launchImage: screwdrivercd/launcher
+        # Container tags to use
+        launchVersion: stable
+        # Circuit breaker config
+        fusebox:
+            breaker:
+                # in milliseconds
+                timeout: 10000
+    k8s-vm:
+      options:
+        # Configuration of Docker
+        kubernetes:
+            # The host or IP of the kubernetes cluster
+            host: kubernetes.default
+            # Resources for build pod
+            resources:
+                cpu:
+                    # Number of cpu cores
+                    micro: 1
+                    low: 2
+                    high: 6
+                    turbo: 12
+                memory:
+                    # Memory in GB
+                    micro: 1
+                    low: 2
+                    high: 12
+                    turbo: 16
+            # Default build timeout for all builds in this cluster
+            buildTimeout: 90
+            # Default max build timeout
+            maxBuildTimeout: 120
+            # k8s node selectors for approprate pod scheduling
+            nodeSelectors: {}
+            preferredNodeSelectors: {}
+        # Launcher image to use
+        launchImage: screwdrivercd/launcher
+        # Launcher container tag to use
+        launchVersion: stable
+        # Circuit breaker config
+        fusebox:
+            breaker:
+                # in milliseconds
+                timeout: 10000
+#     jenkins:
+#       options:
+#         # Configuration of Jenkins
+#         jenkins:
+#             host: jenkins.default
+#             port: 8080
+#             username: screwdriver
+#             password: "WOW-AN-EVEN-MORE-INSECURE-PASSWORD!!!!"
+#             # Default build timeout (in minutes)
+#             buildTimeout: 90
+#             # Default max build timeout (in minutes)
+#             maxBuildTimeout: 120
+
+ecosystem:
+    # Externally routable URL for the User Interface
+    api: https://api.screwdriver.cd
+    # Externally routable URL for the Artifact Store
+    store: https://store.screwdriver.cd
+
+rabbitmq:
+    # Protocol for rabbitmq server, use amqps for ssl
+    protocol: amqp
+    # User to push to rabbitmq
+    username: foo
+    # Password to connect to rabbitmq cluster
+    password: bar
+    # Host of rabbitmq cluster
+    host: 127.0.0.1
+    # Port of rabbitmq cluster
+    port: 5672
+    # Virtual Host for queues
+    vhost: /screwdriver
+    # Connect Options
+    connectOptions: {json: true, heartbeatIntervalInSeconds: 20, reconnectTimeInSeconds: 30}
+    # Reconnect limit
+    reconnectLimit: 3
+    # Queue name to consume from
+    queue: test
+    # Prefetch count
+    prefetchCount: 20
+    # Queue options
+    queueOptions: {durable: true, autodelete: false, deadLetterExchange: 'build', deadLetterRoutingKey: 'test_retry'}
+    # Message reprocess limit
+    messageReprocessLimit: 3
