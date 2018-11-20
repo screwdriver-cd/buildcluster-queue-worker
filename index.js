@@ -20,76 +20,63 @@ let channelWrapper;
 let reconnectCounter = 0;
 
 /**
- * [submitJob submit start or stop jobs to k8s executor]
- * @param  {[Object]} data          [Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message]
- * @param  {[String]} job           [job name, either start or stop]
- * @param  {[Object]} buildConfig   [full buildConfig details to be sent to k8s executor]
- * @return {[type]}                 [none]
- */
-function submitJob(data, job, buildConfig) {
-    const thread = spawn('./lib/jobs.js');
-
-    thread
-        .send([job, buildConfig])
-        .on('done', () => {
-            logger.info(`acknowledge, k8s executor.${job} ` +
-              `job completed for buildId ${buildConfig.buildId} `);
-            channelWrapper.ack(data);
-            thread.kill();
-        })
-        .on('error', (error) => {
-            logger.info(`err: ${error}. don't acknowledge, k8s executor.${job} ` +
-              `job errored for buildId ${buildConfig.buildId} `);
-            channelWrapper.nack(data, false, false);
-            thread.kill();
-        })
-        .on('exit', () => {
-            logger.info('k8s executor thread terminated for ' +
-              `job: ${job} buildId: ${buildConfig.buildId} `);
-        });
-}
-
-/**
  * [onMessage consume messages in batches, once its available in the queue. channelWrapper has in-built back pressure
  *            meaning if consumed messages are not ack'd or nack'd, it will not fetch more messages. Definitely need
- *            to ack or nack messages, otherwise it will halt indefinitely. ]
+ *            to ack or nack messages, otherwise it will halt indefinitely. submit start or stop jobs to k8s executor
+ *            using threads ]
  * @param  {[Object]} data  [Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message]
  * @return {[type]}         [none]
  */
 function onMessage(data) {
     try {
         const fullBuildConfig = JSON.parse(data.content);
-        const job = fullBuildConfig.job;
+        const jobType = fullBuildConfig.job;
         const buildConfig = fullBuildConfig.buildConfig;
+        const thread = spawn('./lib/jobs.js');
+        let retryCount = 0;
+        const job = `jobId: ${buildConfig.buildId}, ` +
+                            `jobType: ${jobType}, buildId: ${buildConfig.buildId}`;
 
-        logger.info(`processing job: ${job} for buildId: ${buildConfig.buildId}`);
+        logger.info(`processing ${job}`);
+
         if (Object.keys(data.properties.headers).length > 0) {
-            const retryCount = data.properties.headers['x-death'][0].count;
-            const failureMessage = data.properties.headers['x-death'][0].reason;
-
-            logger.info(`failure reason: ${failureMessage}, retried ${retryCount}` +
-            `(${messageReprocessLimit})`);
-            if (retryCount > messageReprocessLimit) {
-                helper.updateBuildStatus({
-                    buildConfig: fullBuildConfig,
-                    status: 'FAILURE',
-                    statusMessage: `${failureMessage}`
-                }, (err) => {
-                    if (!err) {
-                        logger.error(`failed to update build status. reason: ${failureMessage} `);
-                    } else {
-                        logger.info('build status successfully updated');
-                    }
-                });
-                logger.info(`acknowledge, max retries exceeded
-                  for job:${job}, buildId: ${buildConfig.buildId}`);
-                channelWrapper.ack(data);
-            } else {
-                submitJob(data, job, buildConfig);
-            }
-        } else {
-            submitJob(data, job, buildConfig);
+            retryCount = data.properties.headers['x-death'][0].count;
+            logger.info(`retrying ${retryCount}(${messageReprocessLimit}) for ` +
+                          `${job}`);
         }
+
+        thread
+            .send([jobType, buildConfig, job])
+            .on('message', () => {
+                logger.info(`acknowledge, job completed for ${job} `);
+                channelWrapper.ack(data);
+                thread.kill();
+            })
+            .on('error', (error) => {
+                if (retryCount >= messageReprocessLimit) {
+                    logger.info(`acknowledge, max retries exceeded for ${job}`);
+                    helper.updateBuildStatus(
+                        buildConfig,
+                        'FAILED',
+                        `${error}`,
+                        (err) => {
+                            if (!err) {
+                                logger.error(`failed to update build status. reason: ${error} `);
+                            } else {
+                                logger.info('build status successfully updated');
+                            }
+                        });
+                    channelWrapper.ack(data);
+                } else {
+                    logger.info(`err: ${error}, don't acknowledge, ` +
+                                  `retried ${retryCount}(${messageReprocessLimit}) for ${job}`);
+                    channelWrapper.nack(data, false, false);
+                }
+                thread.kill();
+            })
+            .on('exit', () => {
+                logger.info(`thread terminated for ${job} `);
+            });
     } catch (err) {
         logger.error(`error ${err}, acknowledge data: ${data} payload: ${data.content} `);
         channelWrapper.ack(data);
@@ -111,9 +98,9 @@ async function boot() {
             logger.error(`exceeded max server reconnect limit ${reconnectLimit}. exit app ... `);
             process.exit(1);
         }
-        logger.info(`reconnecting rabbitmq server ${host} ...
-        ${reconnectCounter} (${reconnectLimit}) `);
         reconnectCounter += 1;
+        logger.info(`reconnecting rabbitmq server ${host}, ` +
+                      `${reconnectCounter}(${reconnectLimit}) `);
     });
 
     channelWrapper = connection.createChannel({
