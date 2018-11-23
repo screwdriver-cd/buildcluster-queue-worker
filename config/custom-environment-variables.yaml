@@ -172,8 +172,6 @@ rabbitmq:
     vhost: RABBITMQ_VIRTUAL_HOST
     # Connection options
     connectOptions: RABBITMQ_CONNECT_OPTIONS
-    # Reconnect limit
-    reconnectLimit: RABBITMQ_RECONNECT_LIMIT
     # Queue name to consume from
     queue: RABBITMQ_QUEUE
     # Queue options

@@ -3,7 +3,7 @@
 const config = require('config');
 
 const rabbitmqConfig = config.get('rabbitmq');
-const { protocol, username, password, host, port, vhost, connectOptions, reconnectLimit,
+const { protocol, username, password, host, port, vhost, connectOptions,
     queue, queueOptions, prefetchCount,
     messageReprocessLimit } = rabbitmqConfig;
 const amqpURI = `${protocol}://${username}:${password}@${host}:${port}${vhost}`;
@@ -18,7 +18,6 @@ function getConfig() {
         amqpURI,
         host,
         connectOptions,
-        reconnectLimit,
         queue,
         queueOptions,
         prefetchCount,

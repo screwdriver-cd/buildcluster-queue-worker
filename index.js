@@ -5,7 +5,7 @@ const winston = require('winston');
 const threads = require('threads');
 const helper = require('./lib/helper');
 const rabbitmqConf = require('./config/rabbitmq');
-const { amqpURI, host, connectOptions, reconnectLimit,
+const { amqpURI, host, connectOptions,
     queue, queueOptions, prefetchCount,
     messageReprocessLimit } = rabbitmqConf.getConfig();
 const spawn = threads.spawn;
@@ -17,7 +17,6 @@ const logger = winston.createLogger({
 });
 
 let channelWrapper;
-let reconnectCounter = 0;
 
 /**
  * [onMessage consume messages in batches, once its available in the queue. channelWrapper has in-built back pressure
@@ -87,20 +86,14 @@ function onMessage(data) {
  * [boot connect to rabbitmqserver with heartbeat check, autoconnect options and start channel to consume messages]
  * @return {[type]} [none]
  */
-async function boot() {
-    const connection = await amqp.connect([amqpURI], connectOptions);
+function boot() {
+    const connection = amqp.connect([amqpURI], connectOptions);
 
     connection.on('connect',
-        () => { reconnectCounter = 0; logger.info('rabbitmq server connected!'); });
+        () => { logger.info('rabbitmq server connected!'); });
     connection.on('disconnect', (params) => {
-        logger.info(`server disconnected: ${params.err.stack}`);
-        if (reconnectCounter >= reconnectLimit) {
-            logger.error(`exceeded max server reconnect limit ${reconnectLimit}. exit app ... `);
-            process.exit(1);
-        }
-        reconnectCounter += 1;
-        logger.info(`reconnecting rabbitmq server ${host}, ` +
-                      `${reconnectCounter}(${reconnectLimit}) `);
+        logger.info(`server disconnected: ${params.err.stack}. ` +
+          `reconnecting rabbitmq server ${host}`);
     });
 
     channelWrapper = connection.createChannel({
@@ -120,3 +113,5 @@ async function boot() {
 }
 
 boot();
+
+module.exports = { boot };
