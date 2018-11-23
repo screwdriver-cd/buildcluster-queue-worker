@@ -82,36 +82,26 @@ function onMessage(data) {
     }
 }
 
-/**
- * [boot connect to rabbitmqserver with heartbeat check, autoconnect options and start channel to consume messages]
- * @return {[type]} [none]
- */
-function boot() {
-    const connection = amqp.connect([amqpURI], connectOptions);
+const connection = amqp.connect([amqpURI], connectOptions);
 
-    connection.on('connect',
-        () => { logger.info('rabbitmq server connected!'); });
-    connection.on('disconnect', (params) => {
-        logger.info(`server disconnected: ${params.err.stack}. ` +
-          `reconnecting rabbitmq server ${host}`);
+connection.on('connect',
+    () => { logger.info('rabbitmq server connected!'); });
+connection.on('disconnect', (params) => {
+    logger.info(`server disconnected: ${params.err.stack}. ` +
+      `reconnecting rabbitmq server ${host}`);
+});
+
+channelWrapper = connection.createChannel({
+    setup(channel) {
+        return Promise.all([
+            channel.checkQueue(queue, queueOptions),
+            channel.prefetch(prefetchCount),
+            channel.consume(queue, onMessage)
+        ]);
+    }
+});
+
+channelWrapper.waitForConnect()
+    .then(() => {
+        logger.info(`waiting for messages in queue: ${queue}`);
     });
-
-    channelWrapper = connection.createChannel({
-        setup(channel) {
-            return Promise.all([
-                channel.checkQueue(queue, queueOptions),
-                channel.prefetch(prefetchCount),
-                channel.consume(queue, onMessage)
-            ]);
-        }
-    });
-
-    channelWrapper.waitForConnect()
-        .then(() => {
-            logger.info(`waiting for messages in queue: ${queue}`);
-        });
-}
-
-boot();
-
-module.exports = { boot };
