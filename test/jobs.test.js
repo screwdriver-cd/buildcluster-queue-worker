@@ -3,25 +3,24 @@
 const assert = require('chai').assert;
 const mockery = require('mockery');
 const sinon = require('sinon');
+const fs = require('fs');
+const path = require('path');
+const parser = require('../');
 
 sinon.assert.expose(assert, { prefix: '' });
 
+/**
+ * Load sample data from disk
+ * @method loadData
+ * @param  {String} name Filename to read (inside data dir)
+ * @return {String}      Contents of file
+ */
+function loadData(name) {
+    return fs.readFileSync(path.join(__dirname, 'data', name), 'utf-8');
+}
+
 describe('Jobs Test', () => {
-    const fullBuildConfig = JSON.parse('{"job":"stop",' +
-                                  '"buildConfig": {' +
-                                    '"jobId": 1111,' +
-                                    '"annotations": { ' +
-                                      '"beta.screwdriver.cd/executor": "k8s" ' +
-                                        '},' +
-                                    '"blockedBy": [' +
-                                      '1111' +
-                                    '],' +
-                                    '"apiUri": "foo.bar",' +
-                                    '"buildId": 11111,' +
-                                    '"container": "node:6",' +
-                                    '"token": "fake"' +
-                                  '}' +
-                                '}');
+    const fullBuildConfig = JSON.parse(parser(loadData('stopjob.json')));
 
     let jobs;
     let mockExecutor;

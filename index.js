@@ -12,7 +12,6 @@ const spawn = threads.spawn;
 const logger = winston.createLogger({
     transports: [
         new winston.transports.Console()
-        // new winston.transports.File({ filename: 'combined.log' })
     ]
 });
 
@@ -23,8 +22,8 @@ let channelWrapper;
  *            meaning if consumed messages are not ack'd or nack'd, it will not fetch more messages. Definitely need
  *            to ack or nack messages, otherwise it will halt indefinitely. submit start or stop jobs to k8s executor
  *            using threads ]
- * @param  {[Object]} data  [Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message]
- * @return {[type]}         [none]
+ * @param  {Object} data  [Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message]
+ * @return {}             [none]
  */
 const onMessage = (data) => {
     try {
@@ -75,37 +74,6 @@ const onMessage = (data) => {
             .on('exit', () => {
                 logger.info(`thread terminated for ${job} `);
             });
-
-        /*
-            const jobs = require('./lib/jobs');
-
-            jobs([jobType, buildConfig, job])
-                .then(() => {
-                    logger.info(`acknowledge, job completed for ${job} `);
-                    channelWrapper.ack(data);
-                })
-                .catch((error) => {
-                    if (retryCount >= messageReprocessLimit) {
-                        logger.info(`acknowledge, max retries exceeded for ${job}`);
-                        helper.updateBuildStatus(
-                            buildConfig,
-                            'FAILED',
-                            `${error}`,
-                            (err) => {
-                                if (!err) {
-                                    logger.error(`failed to update build status. reason: ${error} `);
-                                } else {
-                                    logger.info('build status successfully updated');
-                                }
-                            });
-                        channelWrapper.ack(data);
-                    } else {
-                        logger.info(`err: ${error}, don't acknowledge, ` +
-                                      `retried ${retryCount}(${messageReprocessLimit}) for ${job}`);
-                        channelWrapper.nack(data, false, false);
-                    }
-                });
-            */
     } catch (err) {
         logger.error(`error ${err}, acknowledge data: ${data} payload: ${data.content} `);
         channelWrapper.ack(data);
