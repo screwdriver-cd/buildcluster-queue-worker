@@ -37,11 +37,14 @@ const onMessage = (data) => {
 
         logger.info(`processing ${job}`);
 
-        if (Object.keys(data.properties.headers).length > 0) {
-            retryCount = data.properties.headers['x-death'][0].count;
-            logger.info(`retrying ${retryCount}(${messageReprocessLimit}) for ` +
-                          `${job}`);
+        if (typeof data.properties.headers !== 'undefined') {
+            if (Object.keys(data.properties.headers).length > 0) {
+                retryCount = data.properties.headers['x-death'][0].count;
+                logger.info(`retrying ${retryCount}(${messageReprocessLimit}) for ` +
+                              `${job}`);
+            }
         }
+
         thread
             .send([jobType, buildConfig, job])
             .on('message', () => {
