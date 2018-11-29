@@ -5,7 +5,6 @@ const mockery = require('mockery');
 const sinon = require('sinon');
 const fs = require('fs');
 const path = require('path');
-const parser = require('../');
 
 sinon.assert.expose(assert, { prefix: '' });
 
@@ -20,7 +19,7 @@ function loadData(name) {
 }
 
 describe('Helper Test', () => {
-    const fullBuildConfig = JSON.parse(parser(loadData('stopjob.json')));
+    const fullBuildConfig = JSON.parse(loadData('buildConfig.json'));
     const status = 'FAILED';
     const statusMessage = 'exhausted retries';
     const requestOptions = {

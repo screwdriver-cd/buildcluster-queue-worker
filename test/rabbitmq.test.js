@@ -20,7 +20,7 @@ describe('rabbitmq config test', () => {
             autodelete: false,
             deadLetterExchange: 'build',
             deadLetterRoutingKey: 'test_retry' },
-        prefetchCount: 5,
+        prefetchCount: 20,
         messageReprocessLimit: 3
     };
 
