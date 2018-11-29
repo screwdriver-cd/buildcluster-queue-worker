@@ -18,12 +18,12 @@ const logger = winston.createLogger({
 let channelWrapper;
 
 /**
- * [onMessage consume messages in batches, once its available in the queue. channelWrapper has in-built back pressure
+ * onMessage consume messages in batches, once its available in the queue. channelWrapper has in-built back pressure
  *            meaning if consumed messages are not ack'd or nack'd, it will not fetch more messages. Definitely need
  *            to ack or nack messages, otherwise it will halt indefinitely. submit start or stop jobs to k8s executor
- *            using threads ]
- * @param  {Object} data  [Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message]
- * @return {}             [none]
+ *            using threads
+ * @param  {Object} data  Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message
+ * @return {}             none
  */
 const onMessage = (data) => {
     try {

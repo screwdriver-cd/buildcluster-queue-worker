@@ -39,6 +39,7 @@ describe('Jobs Test', () => {
         };
 
         mockExecutorRouter = function () { return mockExecutor; };
+
         mockery.registerMock('screwdriver-executor-router', mockExecutorRouter);
 
         // eslint-disable-next-line global-require
