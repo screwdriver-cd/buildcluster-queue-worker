@@ -23,7 +23,6 @@ let channelWrapper;
  *            to ack or nack messages, otherwise it will halt indefinitely. submit start or stop jobs to k8s executor
  *            using threads
  * @param  {Object} data  Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message
- * @return {}             none
  */
 const onMessage = (data) => {
     try {
