@@ -110,8 +110,8 @@ rabbitmq:
     # Queue name to consume from
     queue: test
     # Prefetch count
-    prefetchCount: 20
+    prefetchCount: '20'
     # Queue options
     queueOptions: { durable: true, autodelete: false, deadLetterExchange: 'build', deadLetterRoutingKey: 'test_retry' }
     # Message reprocess limit
-    messageReprocessLimit: 3
+    messageReprocessLimit: '3'

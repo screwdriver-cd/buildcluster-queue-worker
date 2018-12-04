@@ -52,7 +52,7 @@ const onMessage = (data) => {
                 thread.kill();
             })
             .on('error', (error) => {
-                if (retryCount >= Number(messageReprocessLimit)) {
+                if (retryCount >= messageReprocessLimit) {
                     logger.info(`acknowledge, max retries exceeded for ${job}`);
                     helper.updateBuildStatus(
                         buildConfig,
@@ -95,7 +95,7 @@ channelWrapper = connection.createChannel({
     setup(channel) {
         return Promise.all([
             channel.checkQueue(queue, queueOptions),
-            channel.prefetch(Number(prefetchCount)),
+            channel.prefetch(prefetchCount),
             channel.consume(queue, onMessage)
         ]);
     }

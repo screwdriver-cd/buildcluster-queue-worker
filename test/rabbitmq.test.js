@@ -20,8 +20,8 @@ describe('rabbitmq config test', () => {
             autodelete: false,
             deadLetterExchange: 'build',
             deadLetterRoutingKey: 'test_retry' },
-        prefetchCount: 20,
-        messageReprocessLimit: 3
+        prefetchCount: '20',
+        messageReprocessLimit: '3'
     };
 
     let configMock;
