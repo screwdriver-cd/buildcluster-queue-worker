@@ -106,12 +106,12 @@ rabbitmq:
     # Virtual Host for queues
     vhost: /screwdriver
     # Connect Options
-    connectOptions: "{ json: true, heartbeatIntervalInSeconds: 20, reconnectTimeInSeconds: 30 }"
+    connectOptions: { json: true, heartbeatIntervalInSeconds: 20, reconnectTimeInSeconds: 30 }
     # Queue name to consume from
     queue: test
     # Prefetch count
     prefetchCount: "20"
     # Queue options
-    queueOptions: "{ durable: true, autodelete: false, deadLetterExchange: 'build', deadLetterRoutingKey: 'test_retry' }"
+    queueOptions: { durable: true, autodelete: false, deadLetterExchange: 'build', deadLetterRoutingKey: 'test_retry' }
     # Message reprocess limit
     messageReprocessLimit: "3"
