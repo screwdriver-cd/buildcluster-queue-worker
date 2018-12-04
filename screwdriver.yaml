@@ -12,7 +12,7 @@ jobs:
         requires: main
         template: screwdriver-cd/semantic-release
         steps:
-            - postpublish: git clone https://github.com/screwdriver-cd/toolbox.git ci && ./ci/git-latest.sh && DOCKER_TAG=`cat VERSION` ./ci/docker-trigger.sh
+            - postpublish: git clone https://github.com/screwdriver-cd/toolbox.git ci && ./ci/git-latest.sh && DOCKER_TAG=`cat VERSION` ./ci/docker-trigger.sh && echo $DOCKER_TAG
         environment:
             # Docker hub repo
             DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
