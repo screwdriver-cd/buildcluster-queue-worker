@@ -20,8 +20,8 @@ function getConfig() {
         connectOptions,
         queue,
         queueOptions,
-        prefetchCount,
-        messageReprocessLimit
+        prefetchCount: Number(prefetchCount),
+        messageReprocessLimit: Number(messageReprocessLimit)
     };
 }
 
