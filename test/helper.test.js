@@ -20,7 +20,7 @@ function loadData(name) {
 
 describe('Helper Test', () => {
     const fullBuildConfig = JSON.parse(loadData('buildConfig.json'));
-    const status = 'FAILED';
+    const status = 'FAILURE';
     const statusMessage = 'exhausted retries';
     const requestOptions = {
         auth: { bearer: 'fake' },

@@ -56,13 +56,15 @@ const onMessage = (data) => {
                     logger.info(`acknowledge, max retries exceeded for ${job}`);
                     helper.updateBuildStatus(
                         buildConfig,
-                        'FAILED',
+                        'FAILURE',
                         `${error}`,
-                        (err) => {
-                            if (!err) {
-                                logger.error(`failed to update build status. reason: ${error} `);
+                        (err, response) => {
+                            if (err) {
+                                // eslint-disable-next-line max-len
+                                logger.error(`failed to update build status for build ${buildConfig.buildId}: ${err} ${JSON.stringify(response)}`);
                             } else {
-                                logger.info('build status successfully updated');
+                                // eslint-disable-next-line max-len
+                                logger.info(`build status successfully updated for build ${buildConfig.buildId}`);
                             }
                         });
                     channelWrapper.ack(data);
