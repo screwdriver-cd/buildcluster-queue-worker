@@ -56,7 +56,7 @@ const onMessage = (data) => {
                     logger.info(`acknowledge, max retries exceeded for ${job}`);
                     helper.updateBuildStatus(
                         buildConfig,
-                        'FAILED',
+                        'FAILURE',
                         `${error}`,
                         (err) => {
                             if (!err) {
