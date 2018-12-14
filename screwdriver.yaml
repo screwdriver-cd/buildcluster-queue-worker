@@ -65,4 +65,23 @@ jobs:
         secrets:
             # Talking to Kubernetes
             - K8S_TOKEN
+
+    # Deploy to our prod environment and run tests
+    prod-bf1:
+        requires: [beta]
+        steps:
+            - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
+            - get-tag: ./ci/git-latest.sh
+            - wait-docker: DOCKER_TAG=`cat VERSION` ./ci/docker-wait.sh
+            - deploy-k8s: K8S_TAG=`cat VERSION` ./ci/k8s-deploy.sh
+            - test: echo Put acceptance tests here
+        environment:
+            DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
+            K8S_CONTAINER: screwdriver-buildcluster-queue-worker
+            K8S_IMAGE: screwdrivercd/buildcluster-queue-worker
+            K8S_HOST: api.ossd.k8s.screwdriver.cd
+            K8S_DEPLOYMENT: buildcluster-queue-worker-bf1
+        secrets:
+            # Talking to Kubernetes
+            - K8S_TOKEN
             
