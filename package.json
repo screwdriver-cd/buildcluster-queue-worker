@@ -47,7 +47,7 @@
     "mockery": "^2.1.0",
     "path": "^0.12.7",
     "request": "^2.88.0",
-    "screwdriver-executor-k8s": "^13.3.5",
+    "screwdriver-executor-k8s": "^13.6.1",
     "screwdriver-executor-k8s-vm": "^2.8.4",
     "screwdriver-executor-router": "^1.0.11",
     "threads": "^0.12.1",
