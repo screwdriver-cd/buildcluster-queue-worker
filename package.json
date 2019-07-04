@@ -7,7 +7,9 @@
     "pretest": "eslint .",
     "test": "jenkins-mocha --recursive",
     "start": "node index.js",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -51,12 +53,14 @@
     "screwdriver-executor-k8s-vm": "^3.0.1",
     "screwdriver-executor-router": "^1.0.11",
     "threads": "^0.12.1",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "snyk": "^1.189.0"
   },
   "release": {
     "debug": false,
     "verifyConditions": {
       "path": "./node_modules/semantic-release/src/lib/plugin-noop.js"
     }
-  }
+  },
+  "snyk": true
 }
