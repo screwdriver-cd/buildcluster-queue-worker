@@ -41,7 +41,7 @@ jobs:
             DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
             K8S_CONTAINER: screwdriver-buildcluster-queue-worker
             K8S_IMAGE: screwdrivercd/buildcluster-queue-worker
-            K8S_HOST: api.ossd.k8s.screwdriver.cd
+            K8S_HOST: kubernetes
             K8S_DEPLOYMENT: buildcluster-queue-worker-beta
         secrets:
             # Talking to Kubernetes
@@ -60,7 +60,7 @@ jobs:
             DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
             K8S_CONTAINER: screwdriver-buildcluster-queue-worker
             K8S_IMAGE: screwdrivercd/buildcluster-queue-worker
-            K8S_HOST: api.ossd.k8s.screwdriver.cd
+            K8S_HOST: kubernetes
             K8S_DEPLOYMENT: buildcluster-queue-worker
         secrets:
             # Talking to Kubernetes
@@ -79,7 +79,7 @@ jobs:
             DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
             K8S_CONTAINER: screwdriver-buildcluster-queue-worker
             K8S_IMAGE: screwdrivercd/buildcluster-queue-worker
-            K8S_HOST: api.ossd.k8s.screwdriver.cd
+            K8S_HOST: kubernetes
             K8S_DEPLOYMENT: buildcluster-queue-worker-bf1
         secrets:
             # Talking to Kubernetes
