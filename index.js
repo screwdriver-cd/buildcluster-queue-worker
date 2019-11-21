@@ -1,7 +1,6 @@
 'use strict';
 
 const amqp = require('amqp-connection-manager');
-const winston = require('winston');
 const threads = require('threads');
 const helper = require('./lib/helper');
 const rabbitmqConf = require('./config/rabbitmq');
@@ -9,11 +8,7 @@ const { amqpURI, host, connectOptions,
     queue, queueOptions, prefetchCount,
     messageReprocessLimit } = rabbitmqConf.getConfig();
 const spawn = threads.spawn;
-const logger = winston.createLogger({
-    transports: [
-        new winston.transports.Console()
-    ]
-});
+const logger = require('screwdriver-logger');
 
 let channelWrapper;
 
