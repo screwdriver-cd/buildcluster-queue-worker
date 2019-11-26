@@ -164,6 +164,11 @@ executor:
         # Interval to detect the stopped job (seconds)
         cleanupWatchInterval: EXECUTOR_JENKINS_CLEANUP_WATCH_INTERVAL
 
+# build cache strategies: s3, disk, with s3 as default option to store cache
+cache:
+    strategy: CACHE_STRATEGY
+    path: CACHE_PATH
+
 ecosystem:
     # URL for the User Interface
     ui: ECOSYSTEM_UI
