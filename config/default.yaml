@@ -114,6 +114,10 @@ ecosystem:
     api: https://api.screwdriver.cd
     # Externally routable URL for the Artifact Store
     store: https://store.screwdriver.cd
+    # build cache strategies: s3, disk, with s3 as default option to store cache
+    cache:
+        strategy: s3
+        path: "/"
 
 rabbitmq:
     # Protocol for rabbitmq server, use amqps for ssl

@@ -178,6 +178,10 @@ ecosystem:
     store: ECOSYSTEM_STORE
     # Pushgateway URL for Prometheus
     pushgatewayUrl: ECOSYSTEM_PUSHGATEWAY_URL
+    # build cache strategies: s3, disk, with s3 as default option to store cache
+    cache:
+        strategy: CACHE_STRATEGY
+        path: CACHE_PATH
 
 rabbitmq:
     # Protocol for rabbitmq server, use amqps for ssl
