@@ -118,6 +118,9 @@ ecosystem:
     cache:
         strategy: "s3"
         path: "/"
+        compress: false
+        md5check: false
+        max_size_mb: 0
 
 rabbitmq:
     # Protocol for rabbitmq server, use amqps for ssl
