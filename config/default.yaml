@@ -101,12 +101,6 @@ executor:
 #             # Default max build timeout (in minutes)
 #             maxBuildTimeout: 120
 
-
-# build cache strategies: s3, disk, with s3 as default option to store cache
-cache:
-    strategy: s3
-    path: ""
-
 ecosystem:
     # Externally routable URL for the User Interface
     ui: https://cd.screwdriver.cd
