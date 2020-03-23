@@ -9,6 +9,7 @@ executor:
             host: kubernetes.default
             # Privileged mode, default restricted, set to true for trusted container runtime use-case
             privileged: false
+            automountServiceAccountToken: false
             dockerFeatureEnabled: false
             resources:
                 cpu:
