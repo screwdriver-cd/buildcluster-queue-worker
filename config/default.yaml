@@ -7,6 +7,8 @@ executor:
         kubernetes:
             # The host or IP of the kubernetes cluster
             host: kubernetes.default
+            # Privileged mode, default restricted, set to true for trusted container runtime use-case
+            privileged: false
             dockerFeatureEnabled: false
             resources:
                 cpu:
@@ -49,6 +51,8 @@ executor:
         kubernetes:
             # The host or IP of the kubernetes cluster
             host: kubernetes.default
+            # Privileged mode, default restricted, set to true for trusted container runtime use-case
+            privileged: false
             # Resources for build pod
             resources:
                 cpu:
