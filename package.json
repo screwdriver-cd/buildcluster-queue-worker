@@ -40,7 +40,7 @@
     "sinon": "^7.2.5"
   },
   "dependencies": {
-    "amqp-connection-manager": "^2.2.0",
+    "amqp-connection-manager": "^3.2.0",
     "amqplib": "^0.5.2",
     "config": "^2.0.1",
     "fs": "0.0.1-security",
