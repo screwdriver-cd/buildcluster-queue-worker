@@ -32,6 +32,8 @@ executor:
             nodeSelectors: {}
             preferredNodeSelectors: {}
             annotations: {}
+            # support for kata-containers-as-a-runtimeclass
+            runtimeClass: ""
         # Launcher image to use
         launchImage: screwdrivercd/launcher
         # Container tags to use

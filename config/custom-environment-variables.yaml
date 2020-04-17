@@ -57,6 +57,8 @@ executor:
             annotations:
               __name: K8S_ANNOTATIONS
               __format: json
+            # support for kata-containers-as-a-runtimeclass
+            runtimeClass: K8S_RUNTIME_CLASS
         # Launcher image to use
         launchImage: LAUNCH_IMAGE
         # Launcher container tag to use
