@@ -3,6 +3,7 @@ executor:
     # Default executor
     plugin: k8s-vm
     k8s:
+      weightage: 0
       options:
         kubernetes:
             # The host or IP of the kubernetes cluster
@@ -49,6 +50,7 @@ executor:
             retryDelay: 3000
             maxAttempts: 5
     k8s-vm:
+      weightage: 0
       options:
         # Configuration of Docker
         kubernetes:
