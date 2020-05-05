@@ -42,12 +42,12 @@ describe('Jobs Test', () => {
         mockExecutorK8s = {
             start: sinon.stub(),
             stop: sinon.stub(),
-            name: 'k8s-vm'
+            name: 'k8s'
         };
         mockExecutorK8sVm = {
             start: sinon.stub(),
             stop: sinon.stub(),
-            name: 'k8s'
+            name: 'k8s-vm'
         };
 
         routerFuncs = {
@@ -155,6 +155,20 @@ describe('Jobs Test', () => {
                     assert.notCalled(mockExecutorK8s.stop);
                 });
         });
+        it('starts a job with default plugin when no weight and no annotation present', () => {
+            mockExecutorK8sVm.start.resolves(null);
+            const overrideBuildConfig = fullBuildConfig.buildConfig;
+
+            delete overrideBuildConfig.annotations;
+            const job = `jobId: ${overrideBuildConfig.buildId}, ` +
+                `jobType: 'start', buildId: ${overrideBuildConfig.buildId}`;
+
+            return jobs(['start', overrideBuildConfig, job])
+                .then(() => {
+                    assert.notCalled(mockExecutorK8s.start);
+                    assert.calledWith(mockExecutorK8sVm.start, overrideBuildConfig);
+                });
+        });
     });
 
     describe('Executor config with weightage', () => {
@@ -184,15 +198,21 @@ describe('Jobs Test', () => {
             // eslint-disable-next-line global-require
             jobs = require('../lib/jobs.js');
         });
-        it('starts a job with k8s weighted executor', () => {
+        it('starts a job with weighted executor randomly', () => {
             mockExecutorK8s.start.resolves(null);
+            mockExecutorK8sVm.start.resolves(null);
             const job = `jobId: ${anotherBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 'start', buildId: ${anotherBuildConfig.buildConfig.buildId}`;
 
             return jobs(['start', anotherBuildConfig.buildConfig, job])
                 .then(() => {
-                    assert.notCalled(mockExecutorK8sVm.start);
-                    assert.calledWith(mockExecutorK8s.start, anotherBuildConfig.buildConfig);
+                    if (mockExecutor.defaultExecutor.name === 'k8s') {
+                        assert.notCalled(mockExecutorK8sVm.start);
+                        assert.calledWith(mockExecutorK8s.start, anotherBuildConfig.buildConfig);
+                    } else {
+                        assert.notCalled(mockExecutorK8s.start);
+                        assert.calledWith(mockExecutorK8sVm.start, anotherBuildConfig.buildConfig);
+                    }
                 });
         });
 
