@@ -23,13 +23,10 @@ describe('Jobs Test', () => {
     const anotherBuildConfig = JSON.parse(loadData('anotherBuildConfig.json'));
     let jobs;
     let mockExecutor;
-    let mockExecutorK8s;
-    let mockExecutorK8sVm;
     let mockExecutorRouter;
     let mockConfig;
     let mockEcosystemConfig;
     let mockExecutorConfig;
-    let routerFuncs;
 
     before(() => {
         mockery.enable({
@@ -39,39 +36,13 @@ describe('Jobs Test', () => {
     });
 
     beforeEach(() => {
-        mockExecutorK8s = {
-            start: sinon.stub(),
-            stop: sinon.stub(),
-            name: 'k8s'
-        };
-        mockExecutorK8sVm = {
-            start: sinon.stub(),
-            stop: sinon.stub(),
-            name: 'k8s-vm'
-        };
-
-        routerFuncs = {
-            executorFunc: type => (type === 'k8s' ? mockExecutorK8s : mockExecutorK8sVm),
-            mockRouterfunc: (config, defaultExecutor) => {
-                const executorType = config.annotations
-                    && config.annotations['beta.screwdriver.cd/executor'];
-
-                return executorType ? routerFuncs.executorFunc(executorType) : defaultExecutor;
-            }
-        };
         mockExecutor = {
-            start: (config) => {
-                const executor = routerFuncs.mockRouterfunc(config, mockExecutor.defaultExecutor);
-
-                return executor.start(config);
-            },
-            stop: (config) => {
-                const executor = routerFuncs.mockRouterfunc(config, mockExecutor.defaultExecutor);
-
-                return executor.stop(config);
-            },
-            defaultExecutor: null
+            start: sinon.stub(),
+            stop: sinon.stub()
         };
+
+        mockExecutorRouter = function () { return mockExecutor; };
+
         mockEcosystemConfig = {
             ui: 'foo.ui',
             api: 'foo.api',
@@ -107,56 +78,46 @@ describe('Jobs Test', () => {
             mockConfig.get.withArgs('executor').returns(mockExecutorConfig);
             mockConfig.get.withArgs('ecosystem').returns(mockEcosystemConfig);
 
-            mockExecutorRouter = function (routerConfig) {
-                if (routerConfig.defaultPlugin) {
-                    mockExecutor.defaultExecutor =
-                        routerFuncs.executorFunc(routerConfig.defaultPlugin);
-                }
-
-                return mockExecutor;
-            };
             mockery.registerMock('screwdriver-executor-router', mockExecutorRouter);
             // eslint-disable-next-line global-require
             jobs = require('../lib/jobs.js');
         });
         it('starts a job', () => {
-            mockExecutorK8s.start.resolves(null);
+            mockExecutor.start.resolves(null);
             const job = `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 'start', buildId: ${fullBuildConfig.buildConfig.buildId}`;
 
             return jobs(['start', fullBuildConfig.buildConfig, job])
                 .then(() => {
-                    assert.notCalled(mockExecutorK8sVm.start);
-                    assert.calledWith(mockExecutorK8s.start, fullBuildConfig.buildConfig);
+                    assert.calledWith(mockExecutor.start, fullBuildConfig.buildConfig);
                 });
         });
 
         it('stops a job', () => {
-            mockExecutorK8s.stop.resolves(null);
+            mockExecutor.stop.resolves(null);
             const job = `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 'stop', buildId: ${fullBuildConfig.buildConfig.buildId}`;
 
             return jobs(['stop', fullBuildConfig.buildConfig, job])
                 .then(() => {
-                    assert.notCalled(mockExecutorK8sVm.stop);
-                    assert.calledWith(mockExecutorK8s.stop, fullBuildConfig.buildConfig);
+                    assert.calledWith(mockExecutor.stop, fullBuildConfig.buildConfig);
                 });
         });
 
         it('invalid jobType', () => {
-            mockExecutorK8s.start.resolves(null);
-            mockExecutorK8s.stop.resolves(null);
+            mockExecutor.start.resolves(null);
+            mockExecutor.stop.resolves(null);
             const job = `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 's', buildId: ${fullBuildConfig.buildConfig.buildId}`;
 
             return jobs(['s', fullBuildConfig.buildConfig, job])
                 .then(() => {
-                    assert.notCalled(mockExecutorK8s.start);
-                    assert.notCalled(mockExecutorK8s.stop);
+                    assert.notCalled(mockExecutor.start);
+                    assert.notCalled(mockExecutor.stop);
                 });
         });
         it('starts a job with default plugin when no weight and no annotation present', () => {
-            mockExecutorK8sVm.start.resolves(null);
+            mockExecutor.start.resolves(null);
             const overrideBuildConfig = fullBuildConfig.buildConfig;
 
             delete overrideBuildConfig.annotations;
@@ -165,8 +126,7 @@ describe('Jobs Test', () => {
 
             return jobs(['start', overrideBuildConfig, job])
                 .then(() => {
-                    assert.notCalled(mockExecutorK8s.start);
-                    assert.calledWith(mockExecutorK8sVm.start, overrideBuildConfig);
+                    assert.calledWith(mockExecutor.start, overrideBuildConfig);
                 });
         });
     });
@@ -185,39 +145,25 @@ describe('Jobs Test', () => {
             mockConfig.get.withArgs('executor').returns(mockExecutorConfig);
             mockConfig.get.withArgs('ecosystem').returns(mockEcosystemConfig);
 
-            mockExecutorRouter = function (routerConfig) {
-                if (routerConfig.defaultPlugin) {
-                    mockExecutor.defaultExecutor =
-                        routerFuncs.executorFunc(routerConfig.defaultPlugin);
-                }
-
-                return mockExecutor;
-            };
             mockery.registerMock('screwdriver-executor-router', mockExecutorRouter);
 
             // eslint-disable-next-line global-require
             jobs = require('../lib/jobs.js');
         });
         it('starts a job with weighted executor randomly', () => {
-            mockExecutorK8s.start.resolves(null);
-            mockExecutorK8sVm.start.resolves(null);
+            mockExecutor.start.resolves('k8sresult');
             const job = `jobId: ${anotherBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 'start', buildId: ${anotherBuildConfig.buildConfig.buildId}`;
 
             return jobs(['start', anotherBuildConfig.buildConfig, job])
-                .then(() => {
-                    if (mockExecutor.defaultExecutor.name === 'k8s') {
-                        assert.notCalled(mockExecutorK8sVm.start);
-                        assert.calledWith(mockExecutorK8s.start, anotherBuildConfig.buildConfig);
-                    } else {
-                        assert.notCalled(mockExecutorK8s.start);
-                        assert.calledWith(mockExecutorK8sVm.start, anotherBuildConfig.buildConfig);
-                    }
+                .then((result) => {
+                    assert.deepEqual(result, 'k8sresult');
+                    assert.calledWith(mockExecutor.start, anotherBuildConfig.buildConfig);
                 });
         });
 
         it('starts a job with executor annotations k8s-vm and not weighted', () => {
-            mockExecutorK8sVm.start.resolves(null);
+            mockExecutor.start.resolves(null);
             const overrideBuildConfig = Object.assign(anotherBuildConfig.buildConfig, {
                 annotations: {
                     'beta.screwdriver.cd/executor': 'k8s-vm'
@@ -228,8 +174,7 @@ describe('Jobs Test', () => {
 
             return jobs(['start', overrideBuildConfig, job])
                 .then(() => {
-                    assert.notCalled(mockExecutorK8s.start);
-                    assert.calledWith(mockExecutorK8sVm.start, overrideBuildConfig);
+                    assert.calledWith(mockExecutor.start, overrideBuildConfig);
                 });
         });
     });
