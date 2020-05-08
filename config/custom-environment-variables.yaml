@@ -5,6 +5,7 @@ executor:
     plugin: EXECUTOR_PLUGIN
     # The NPM module object(s) for the executor plugin(s)
     k8s:
+      weightage: WEIGHT_K8S
       options:
         kubernetes:
             # The host or IP of the kubernetes cluster
@@ -75,6 +76,7 @@ executor:
             retryDelay: REQUEST_RETRYDELAY
             maxAttempts: REQUEST_MAXATTEMPTS
     k8s-vm:
+      weightage: WEIGHT_K8S_VM
       options:
         # Configuration of Docker
         kubernetes:
@@ -140,6 +142,7 @@ executor:
             retryDelay: REQUEST_RETRYDELAY
             maxAttempts: REQUEST_MAXATTEMPTS
     jenkins:
+      weightage: WEIGHT_JENKINS
       options:
         jenkins:
             host: EXECUTOR_JENKINS_HOST

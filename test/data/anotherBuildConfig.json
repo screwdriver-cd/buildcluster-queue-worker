@@ -1,0 +1,14 @@
+{
+    "job": "start",
+    "buildConfig": {
+      "jobId": 2222,
+      "blockedBy": [
+        3333
+      ],
+      "apiUri": "bar.foo",
+      "buildId": 22221,
+      "container": "node:10",
+      "token": "veryfake"
+    }
+  }
+  

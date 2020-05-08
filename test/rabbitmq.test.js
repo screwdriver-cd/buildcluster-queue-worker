@@ -16,10 +16,12 @@ describe('rabbitmq config test', () => {
         vhost: '/screwdriver',
         connectOptions: { json: true, heartbeatIntervalInSeconds: 20, reconnectTimeInSeconds: 30 },
         queue: 'test',
-        queueOptions: { durable: true,
+        queueOptions: {
+            durable: true,
             autodelete: false,
             deadLetterExchange: 'build',
-            deadLetterRoutingKey: 'test_retry' },
+            deadLetterRoutingKey: 'test_retry'
+        },
         prefetchCount: 20,
         messageReprocessLimit: 3
     };
@@ -36,15 +38,13 @@ describe('rabbitmq config test', () => {
 
     beforeEach(() => {
         configMock = {
-            get: sinon.stub().returns({
-                enabled: false,
-                rabbitmq
-            })
+            get: sinon.stub()
         };
 
+        mockery.registerMock('config', configMock);
+        configMock.get.withArgs('rabbitmq').returns(rabbitmq);
         // eslint-disable-next-line global-require
         rabbitmqConfig = require('../config/rabbitmq');
-        mockery.registerMock('config', configMock);
     });
 
     it('populates the correct values', () => {
