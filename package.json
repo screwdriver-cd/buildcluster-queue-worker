@@ -49,7 +49,7 @@
     "request": "^2.88.0",
     "screwdriver-executor-k8s": "^13.16.1",
     "screwdriver-executor-k8s-vm": "^3.2.2",
-    "screwdriver-executor-router": "^1.0.11",
+    "screwdriver-executor-router": "^1.2.0",
     "screwdriver-logger": "^1.0.0",
     "threads": "^0.12.1"
   },
