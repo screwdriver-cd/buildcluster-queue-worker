@@ -6,6 +6,9 @@ executor:
     # The NPM module object(s) for the executor plugin(s)
     k8s:
       weightage: WEIGHT_K8S
+      exclusion:
+        __name: K8S_EXECUTOR_EXCLUSION
+        __value: json
       options:
         kubernetes:
             # The host or IP of the kubernetes cluster
