@@ -5,7 +5,6 @@ executor:
     k8s:
       exclusion:
         - 'rhel6'
-        - 'ylinux6'
       weightage: 0
       options:
         kubernetes:
