@@ -90,4 +90,31 @@ describe('Helper Test', () => {
                 done();
             });
     });
+
+    it('returns message properties with header', (done) => {
+        const pipelineDeleteCacheConfig = JSON.parse(loadData('pipelineDeleteCacheConfig.json'));
+        const m = helper.getMessageProperties(pipelineDeleteCacheConfig.properties);
+
+        assert.deepEqual(m.size, 5);
+        assert.deepEqual(m.get('headers-x-death')[0].count, 1);
+        assert.deepEqual(m.get('headers-x-first-death-exchange'), '');
+        assert.deepEqual(m.get('headers-x-first-death-queue'), 'test');
+        assert.deepEqual(m.get('headers-x-first-death-reason'), 'rejected');
+
+        // eslint-disable-next-line max-len
+        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "entity": "pipelines", "prefix":"" }'));
+
+        done();
+    });
+
+    it('returns message properties without header', (done) => {
+        // eslint-disable-next-line max-len
+        const betaPipelineDeleteCacheConfig = JSON.parse(loadData('betaPipelineDeleteCacheConfig.json'));
+        const m = helper.getMessageProperties(betaPipelineDeleteCacheConfig.properties);
+
+        assert.deepEqual(m.size, 1);
+        // eslint-disable-next-line max-len
+        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "entity": "jobs", "prefix":"beta-" }'));
+        done();
+    });
 });

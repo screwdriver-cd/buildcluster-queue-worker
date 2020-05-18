@@ -1,0 +1,33 @@
+{
+    "properties": {
+        "headers": {
+            "x-death": [  { "count": 1,  "reason": "rejected",  "time": { "!": "timestamp", "value": 1589754141 } } ],
+            "x-first-death-exchange": "",
+            "x-first-death-queue": "test",
+            "x-first-death-reason": "rejected"
+        },
+        "type": {
+            "resource": "caches",
+            "action": "delete",
+            "entity": "pipelines",
+            "prefix":""
+        }
+    },
+    "content": {
+        "job": "stop",
+        "buildConfig": {
+            "jobId": 1111,
+            "annotations": {
+                "beta.screwdriver.cd/executor": "k8s"
+            },
+            "blockedBy": [
+                1111
+            ],
+            "apiUri": "foo.bar",
+            "buildId": 11111,
+            "container": "node:6",
+            "token": "fake",
+            "pipelineId": 111
+        }
+    }
+}

@@ -51,7 +51,8 @@
     "screwdriver-executor-k8s-vm": "^3.2.2",
     "screwdriver-executor-router": "^1.2.0",
     "screwdriver-logger": "^1.0.0",
-    "threads": "^0.12.1"
+    "threads": "^0.12.1",
+    "fs-extra": "^9.0.0"
   },
   "release": {
     "debug": false,
