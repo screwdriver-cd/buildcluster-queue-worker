@@ -6,10 +6,10 @@ const helper = require('./lib/helper');
 const config = require('./lib/config');
 const { amqpURI, host, connectOptions,
     queue, queueOptions, prefetchCount,
-    messageReprocessLimit, cachePath } = config.getConfig();
+    messageReprocessLimit, cacheStrategy, cachePath } = config.getConfig();
 const spawn = threads.spawn;
 const logger = require('screwdriver-logger');
-
+const CACHE_STRATEGY_DISK = 'disk';
 let channelWrapper;
 
 /**
@@ -32,7 +32,8 @@ const onMessage = (data) => {
         if (messageProperties.get('type') !== undefined) {
             const messageType = JSON.parse(messageProperties.get('type').toString());
 
-            if (messageType.resource === 'caches' && messageType.action === 'delete') {
+            if (cacheStrategy === CACHE_STRATEGY_DISK && cachePath !== '' &&
+                    messageType.resource === 'caches' && messageType.action === 'delete') {
                 const thread = spawn('./lib/cache.js');
 
                 let id = '';
@@ -49,8 +50,9 @@ const onMessage = (data) => {
                     break;
                 }
                 const job = `jobType: ${messageType.resource}, action: ${messageType.action}, ` +
-                                `cachePath: ${cachePath}, prefix: ${messageType.prefix}, ` +
-                                `entity: ${messageType.entity}, id: ${id}`;
+                            `cacheStrategy: ${cacheStrategy}, cachePath: ${cachePath}, ` +
+                            ` prefix: ${messageType.prefix}, entity: ${messageType.entity}, ` +
+                            ` id: ${id}`;
 
                 logger.info(`processing: ${job}`);
                 if (id !== '') {

@@ -69,7 +69,8 @@ describe('config test', () => {
             queueOptions: configDef.rabbitmq.queueOptions,
             prefetchCount: configDef.rabbitmq.prefetchCount,
             messageReprocessLimit: configDef.rabbitmq.messageReprocessLimit,
-            cachePath: configDef.ecosystem.cache.path
+            strategy: configDef.ecosystem.cache.strategy,
+            path: configDef.ecosystem.cache.path
         });
     });
 
