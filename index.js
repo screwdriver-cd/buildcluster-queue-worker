@@ -72,12 +72,11 @@ const onMessage = (data) => {
                             logger.info(`thread terminated for job ${job}`);
                         });
                 } else {
-                    logger.info(`acknowledge, job ${job}, id is blank - skip process`);
+                    logger.info(`acknowledge, job ${job}, id blank - skip`);
                     channelWrapper.ack(data);
                 }
             } else {
-                logger.info(`acknowledge, resource ${messageType.resource} is invalid ` +
-                                '- skip');
+                logger.info(`acknowledge, resource ${messageType.resource} invalid - skip`);
                 channelWrapper.ack(data);
             }
         } else {
