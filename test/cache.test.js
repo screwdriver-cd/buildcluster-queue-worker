@@ -66,22 +66,26 @@ describe('Cache Test', () => {
      * @param  {p}      Promise  promise.resolve() or promise.reject('err')
      */
     function test(data, p) {
+        const cacheStrategy = 'disk';
+        const cachePath = '/persistent_cache';
         const result = getData(data);
         const type = result[0];
         const id = result[1];
         const job = `jobType: ${type.resource}, action: ${type.action}, ` +
-            `prefix: ${type.prefix}, entity: ${type.entity}, id: ${id}`;
+            `cacheStrategy: ${cacheStrategy}, cachePath: ${cachePath}, ` +
+            ` prefix: ${type.prefix}, entity: ${type.entity}, ` +
+            ` id: ${id}`;
 
         stubFs(p);
 
         if (p === Promise.resolve()) {
-            return cache([job, type.prefix, type.entity, id])
+            return cache([job, cachePath, type.prefix, type.entity, id])
                 .then((ok) => {
                     assert.ok(ok);
                 });
         }
 
-        return cache([job, type.prefix, type.entity, id])
+        return cache([job, cachePath, type.prefix, type.entity, id])
             .catch((err) => {
                 assert.deepEqual(err, 'error deleting directory');
             });
