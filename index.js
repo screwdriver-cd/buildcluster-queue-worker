@@ -54,7 +54,7 @@ const onMessage = (data) => {
                             ` prefix: ${messageType.prefix}, entity: ${messageType.entity}, ` +
                             ` id: ${id}`;
 
-                logger.info(`processing: ${job}`);
+                logger.info(`processing ${job}`);
                 if (id !== '') {
                     thread
                         .send([job, cachePath, messageType.prefix, messageType.entity, id])
