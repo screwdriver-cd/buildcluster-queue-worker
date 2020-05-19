@@ -4,11 +4,11 @@ const amqp = require('amqp-connection-manager');
 const threads = require('threads');
 const helper = require('./lib/helper');
 const config = require('./lib/config');
+const logger = require('screwdriver-logger');
 const { amqpURI, host, connectOptions,
     queue, queueOptions, prefetchCount,
     messageReprocessLimit, cacheStrategy, cachePath } = config.getConfig();
 const spawn = threads.spawn;
-const logger = require('screwdriver-logger');
 const CACHE_STRATEGY_DISK = 'disk';
 let channelWrapper;
 
