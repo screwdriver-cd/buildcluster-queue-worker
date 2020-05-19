@@ -102,7 +102,23 @@ describe('Helper Test', () => {
         assert.deepEqual(m.get('headers-x-first-death-reason'), 'rejected');
 
         // eslint-disable-next-line max-len
-        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "entity": "pipelines", "prefix":"" }'));
+        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "scope": "pipelines", "prefix":"", "id": 1234 }'));
+
+        done();
+    });
+
+    it('returns message properties with header for jobs', (done) => {
+        const jobDeleteCacheConfig = JSON.parse(loadData('jobDeleteCacheConfig.json'));
+        const m = helper.getMessageProperties(jobDeleteCacheConfig.properties);
+
+        assert.deepEqual(m.size, 5);
+        assert.deepEqual(m.get('headers-x-death')[0].count, 1);
+        assert.deepEqual(m.get('headers-x-first-death-exchange'), '');
+        assert.deepEqual(m.get('headers-x-first-death-queue'), 'test');
+        assert.deepEqual(m.get('headers-x-first-death-reason'), 'rejected');
+
+        // eslint-disable-next-line max-len
+        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "scope": "jobs", "prefix":"", "id": 12345 }'));
 
         done();
     });
@@ -139,7 +155,7 @@ describe('Helper Test', () => {
 
         assert.deepEqual(m.size, 1);
         // eslint-disable-next-line max-len
-        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "entity": "jobs", "prefix":"beta-" }'));
+        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "scope": "pipelines", "prefix":"beta-", "id": 12434 }'));
         done();
     });
 });

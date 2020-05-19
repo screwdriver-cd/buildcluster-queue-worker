@@ -30,22 +30,9 @@ describe('Cache Test', () => {
      * @return {array}        message properties type as json, id
      */
     function getData(data) {
-        const fullBuildConfig = data.content;
-        const buildConfig = fullBuildConfig.buildConfig;
         const messageProperties = helper.getMessageProperties(data.properties);
         const type = messageProperties.get('type');
-        let id = '';
-
-        switch (type.entity) {
-        case 'pipelines':
-            id = buildConfig.pipelineId;
-            break;
-        case 'jobs':
-            id = buildConfig.jobId;
-            break;
-        default:
-            break;
-        }
+        const id = messageProperties.get('id');
 
         return [type, id];
     }
@@ -73,19 +60,19 @@ describe('Cache Test', () => {
         const id = result[1];
         const job = `jobType: ${type.resource}, action: ${type.action}, ` +
             `cacheStrategy: ${cacheStrategy}, cachePath: ${cachePath}, ` +
-            ` prefix: ${type.prefix}, entity: ${type.entity}, ` +
-            ` id: ${id}`;
+            ` prefix: ${type.prefix}, scope: ${type.scope}, ` +
+            ` id: ${type.id}`;
 
         stubFs(p);
 
         if (p === Promise.resolve()) {
-            return cache([job, cachePath, type.prefix, type.entity, id])
+            return cache([job, cachePath, type.prefix, type.scope, id])
                 .then((ok) => {
                     assert.ok(ok);
                 });
         }
 
-        return cache([job, cachePath, type.prefix, type.entity, id])
+        return cache([job, cachePath, type.prefix, type.scope, id])
             .catch((err) => {
                 assert.deepEqual(err, 'error deleting directory');
             });

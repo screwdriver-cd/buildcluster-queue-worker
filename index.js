@@ -17,72 +17,55 @@ let channelWrapper;
  *            meaning if consumed messages are not ack'd or nack'd, it will not fetch more messages. Definitely need
  *            to ack or nack messages, otherwise it will halt indefinitely. submit start or stop jobs to build executor
  *            using threads.
- *            consume type from message properties to determine if the message is to
- *            clear the cache directory for pipeline or job.
+ *            consume type from message properties to determine if message is to clear pipeline or job cache directory.
  *            message properties => type => should be in below json format:
- *              type: { "resource": "caches", "action": "delete", "entity": "pipelines", "prefix":"" }
+ *              type: { "resource": "caches", "action": "delete", "scope": "pipelines", "prefix": "", "id": 124 }
  * @param  {Object} data  Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message
  */
 const onMessage = (data) => {
     try {
-        const fullBuildConfig = JSON.parse(data.content);
-        const buildConfig = fullBuildConfig.buildConfig;
         const messageProperties = helper.getMessageProperties(data.properties);
 
         if (messageProperties.get('type') !== undefined) {
             const messageType = JSON.parse(messageProperties.get('type').toString());
 
             if (cacheStrategy === CACHE_STRATEGY_DISK && cachePath !== '' &&
-                    messageType.resource === 'caches' && messageType.action === 'delete') {
-                const thread = spawn('./lib/cache.js');
-
-                let id = '';
-
-                switch (messageType.entity) {
-                case 'pipelines':
-                    id = buildConfig.pipelineId;
-                    break;
-                case 'jobs':
-                    id = buildConfig.jobId;
-                    break;
-                default:
-                    logger.info(`entity: ${messageType.entity} is invalid, skip`);
-                    break;
-                }
+                    messageType.resource === 'caches' && messageType.action === 'delete' &&
+                    messageType.scope !== '' && messageType.id !== '') {
+                const threadCache = spawn('./lib/cache.js');
                 const job = `jobType: ${messageType.resource}, action: ${messageType.action}, ` +
                             `cacheStrategy: ${cacheStrategy}, cachePath: ${cachePath}, ` +
-                            ` prefix: ${messageType.prefix}, entity: ${messageType.entity}, ` +
-                            ` id: ${id}`;
+                            ` prefix: ${messageType.prefix}, entity: ${messageType.scope}, ` +
+                            ` id: ${messageType.id}`;
 
                 logger.info(`processing ${job}`);
-                if (id !== '') {
-                    thread
-                        .send([job, cachePath, messageType.prefix, messageType.entity, id])
-                        .on('message', () => {
-                            logger.info(`acknowledge, job ${job} - completed`);
-                            channelWrapper.ack(data);
-                            thread.kill();
-                        })
-                        .on('error', (error) => {
-                            logger.info(`acknowledge, job ${job} - error: ${error} `);
-                            channelWrapper.ack(data);
-                            thread.kill();
-                        })
-                        .on('exit', () => {
-                            logger.info(`thread terminated for job ${job}`);
-                        });
-                } else {
-                    logger.info(`acknowledge, job ${job}, id blank - skip`);
-                    channelWrapper.ack(data);
-                }
+                threadCache
+                    .send([job, cachePath, messageType.prefix, messageType.scope, messageType.id])
+                    .on('message', () => {
+                        logger.info(`acknowledge, job completed for ${job}`);
+                        channelWrapper.ack(data);
+                        threadCache.kill();
+                    })
+                    .on('error', (error) => {
+                        logger.info(`acknowledge, job ${job} - error: ${error} `);
+                        channelWrapper.ack(data);
+                        threadCache.kill();
+                    })
+                    .on('exit', () => {
+                        logger.info(`thread terminated for ${job}`);
+                    });
             } else {
-                logger.info(`acknowledge, resource ${messageType.resource} invalid - skip`);
+                logger.info(`acknowledge, ${messageProperties.get('type').toString()} ` +
+                            '- invalid - skip');
                 channelWrapper.ack(data);
             }
         } else {
-            let retryCount = 0;
-            const jobType = fullBuildConfig.job;
             const thread = spawn('./lib/jobs.js');
+            const fullBuildConfig = JSON.parse(data.content);
+            const buildConfig = fullBuildConfig.buildConfig;
+            const jobType = fullBuildConfig.job;
+            let retryCount = 0;
+
             const job = `jobId: ${buildConfig.jobId}, ` +
                 `jobType: ${jobType}, buildId: ${buildConfig.buildId}`;
 
@@ -139,6 +122,7 @@ const connection = amqp.connect([amqpURI], connectOptions);
 
 connection.on('connect',
     () => { logger.info('rabbitmq server connected!'); });
+
 connection.on('disconnect', (params) => {
     logger.info(`server disconnected: ${params.err.stack}. ` +
       `reconnecting rabbitmq server ${host}`);
