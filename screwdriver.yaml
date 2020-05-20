@@ -1,5 +1,5 @@
 shared:
-    image: node:8
+    image: node:12
 
 jobs:
     main:
@@ -84,4 +84,4 @@ jobs:
         secrets:
             # Talking to Kubernetes
             - K8S_TOKEN
-            
+

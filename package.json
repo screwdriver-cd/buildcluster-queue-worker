@@ -35,7 +35,7 @@
     "chai": "^3.5.0",
     "eslint": "^4.3.0",
     "eslint-config-screwdriver": "^3.0.0",
-    "jenkins-mocha": "^7.0.0",
+    "jenkins-mocha": "^8.0.0",
     "mockery": "^2.1.0",
     "sinon": "^7.2.5"
   },
@@ -44,14 +44,14 @@
     "amqplib": "^0.5.2",
     "config": "^2.0.1",
     "fs": "0.0.1-security",
-    "mockery": "^2.1.0",
     "path": "^0.12.7",
     "request": "^2.88.0",
     "screwdriver-executor-k8s": "^13.16.1",
     "screwdriver-executor-k8s-vm": "^3.2.2",
     "screwdriver-executor-router": "^1.2.0",
     "screwdriver-logger": "^1.0.0",
-    "threads": "^0.12.1"
+    "threads": "^0.12.1",
+    "fs-extra": "^9.0.0"
   },
   "release": {
     "debug": false,

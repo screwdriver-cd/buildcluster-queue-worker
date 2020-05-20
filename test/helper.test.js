@@ -90,4 +90,72 @@ describe('Helper Test', () => {
                 done();
             });
     });
+
+    it('returns message properties with header', (done) => {
+        const pipelineDeleteCacheConfig = JSON.parse(loadData('pipelineDeleteCacheConfig.json'));
+        const m = helper.getMessageProperties(pipelineDeleteCacheConfig.properties);
+
+        assert.deepEqual(m.size, 5);
+        assert.deepEqual(m.get('headers-x-death')[0].count, 1);
+        assert.deepEqual(m.get('headers-x-first-death-exchange'), '');
+        assert.deepEqual(m.get('headers-x-first-death-queue'), 'test');
+        assert.deepEqual(m.get('headers-x-first-death-reason'), 'rejected');
+
+        // eslint-disable-next-line max-len
+        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "scope": "pipelines", "prefix":"", "id": 1234 }'));
+
+        done();
+    });
+
+    it('returns message properties with header for jobs', (done) => {
+        const jobDeleteCacheConfig = JSON.parse(loadData('jobDeleteCacheConfig.json'));
+        const m = helper.getMessageProperties(jobDeleteCacheConfig.properties);
+
+        assert.deepEqual(m.size, 5);
+        assert.deepEqual(m.get('headers-x-death')[0].count, 1);
+        assert.deepEqual(m.get('headers-x-first-death-exchange'), '');
+        assert.deepEqual(m.get('headers-x-first-death-queue'), 'test');
+        assert.deepEqual(m.get('headers-x-first-death-reason'), 'rejected');
+
+        // eslint-disable-next-line max-len
+        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "scope": "jobs", "prefix":"", "id": 12345 }'));
+
+        done();
+    });
+
+    it('returns message properties - header and type not defined', (done) => {
+        const pipelineDeleteCacheConfig = JSON.parse(loadData('pipelineDeleteCacheConfig.json'));
+
+        pipelineDeleteCacheConfig.properties.headers = undefined;
+        pipelineDeleteCacheConfig.properties.type = undefined;
+        const m = helper.getMessageProperties(pipelineDeleteCacheConfig.properties);
+
+        assert.deepEqual(m.size, 0);
+        done();
+    });
+
+    it('returns message properties - header present and type {}', (done) => {
+        const pipelineDeleteCacheConfig = JSON.parse(loadData('pipelineDeleteCacheConfig.json'));
+
+        pipelineDeleteCacheConfig.properties.type = {};
+        const m = helper.getMessageProperties(pipelineDeleteCacheConfig.properties);
+
+        assert.deepEqual(m.size, 4);
+        assert.deepEqual(m.get('headers-x-death')[0].count, 1);
+        assert.deepEqual(m.get('headers-x-first-death-exchange'), '');
+        assert.deepEqual(m.get('headers-x-first-death-queue'), 'test');
+        assert.deepEqual(m.get('headers-x-first-death-reason'), 'rejected');
+        done();
+    });
+
+    it('returns message properties without header', (done) => {
+        // eslint-disable-next-line max-len
+        const betaPipelineDeleteCacheConfig = JSON.parse(loadData('betaPipelineDeleteCacheConfig.json'));
+        const m = helper.getMessageProperties(betaPipelineDeleteCacheConfig.properties);
+
+        assert.deepEqual(m.size, 1);
+        // eslint-disable-next-line max-len
+        assert.deepEqual(m.get('type'), JSON.parse('{"resource": "caches", "action": "delete", "scope": "pipelines", "prefix":"beta-", "id": 12434 }'));
+        done();
+    });
 });

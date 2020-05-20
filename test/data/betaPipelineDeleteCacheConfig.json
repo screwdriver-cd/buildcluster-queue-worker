@@ -1,0 +1,13 @@
+{
+    "properties": {
+        "headers": {},
+        "type": {
+            "resource": "caches",
+            "action": "delete",
+            "scope": "pipelines",
+            "prefix":"beta-",
+            "id": 12434
+        }
+    },
+    "content": {}
+}
