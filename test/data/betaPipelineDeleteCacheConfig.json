@@ -1,13 +1,11 @@
 {
-    "properties": {
-        "headers": {},
-        "type": {
-            "resource": "caches",
-            "action": "delete",
-            "scope": "pipelines",
-            "prefix":"beta-",
-            "id": 12434
-        }
-    },
-    "content": {}
+    "job": "clear",
+    "cacheConfig": {
+        "resources": "caches",
+        "action": "delete",
+        "scope": "pipelines",
+        "prefix": "beta-",
+        "id": 1,
+        "pipelineId": 1
+    }
 }

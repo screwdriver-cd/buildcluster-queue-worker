@@ -17,64 +17,74 @@ let channelWrapper;
  *            meaning if consumed messages are not ack'd or nack'd, it will not fetch more messages. Definitely need
  *            to ack or nack messages, otherwise it will halt indefinitely. submit start or stop jobs to build executor
  *            using threads.
- *            consume type from message properties to determine if message is to clear pipeline or job cache directory.
- *            message properties => type => should be in below json format:
- *              type: { "resource": "caches", "action": "delete", "scope": "pipelines", "prefix": "", "id": 124 }
+ *            jobType is clear determines message is for clear pipeline or job cache directory.
+ *              message should be in below json format:
+ *                  type: { "resource": "caches", "action": "delete", "scope": "pipelines", "prefix": "", "pipelineId": 1, "id": 1 }
+ *                  scope => "pipelines" (or) jobs; id => based on scope, either pipeline id (or) job id
  * @param  {Object} data  Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message
  */
 const onMessage = (data) => {
     try {
-        const messageProperties = helper.getMessageProperties(data.properties);
+        const fullBuildConfig = JSON.parse(data.content);
+        const jobType = fullBuildConfig.job;
+        const buildConfig = fullBuildConfig.buildConfig || fullBuildConfig.cacheConfig;
 
-        if (messageProperties.get('type') !== undefined) {
-            const messageType = JSON.parse(messageProperties.get('type').toString());
+        if (jobType === 'clear') {
+            const threadCache = spawn('./lib/cache.js');
+            const job = `jobType: ${jobType}, cacheConfig: ${buildConfig}`;
+
+            logger.info(`processing ${job}`);
 
             if (cacheStrategy === CACHE_STRATEGY_DISK && cachePath !== '' &&
-                    messageType.resource === 'caches' && messageType.action === 'delete' &&
-                    messageType.scope !== '' && messageType.id !== '') {
-                const threadCache = spawn('./lib/cache.js');
-                const job = `jobType: ${messageType.resource}, action: ${messageType.action}, ` +
-                            `cacheStrategy: ${cacheStrategy}, cachePath: ${cachePath}, ` +
-                            ` prefix: ${messageType.prefix}, scope: ${messageType.scope}, ` +
-                            ` id: ${messageType.id}`;
+                buildConfig.resource === 'caches' && buildConfig.action === 'delete' &&
+                buildConfig.scope !== '' && buildConfig.pipelineId !== '' &&
+                buildConfig.id !== '') {
+                // eslint-disable-next-line max-len
+                let dir2Clean = (buildConfig.prefix !== '') ? `${cachePath}/${buildConfig.prefix}` : `${cachePath}`;
 
-                logger.info(`processing ${job}`);
+                dir2Clean = `${dir2Clean}/${buildConfig.scope}/${buildConfig.pipelineId}`;
+
+                if (buildConfig.scope !== 'pipelines') {
+                    dir2Clean = `${dir2Clean}/${buildConfig.id}`;
+                }
+
+                logger.info(`cache directory to clean: ${dir2Clean}`);
                 threadCache
-                    .send([job, cachePath, messageType.prefix, messageType.scope, messageType.id])
+                    .send([dir2Clean])
                     .on('message', () => {
-                        logger.info(`acknowledge, job completed for ${job}`);
+                        logger.info(`acknowledge, clear cache job completed for ${dir2Clean}`);
                         channelWrapper.ack(data);
                         threadCache.kill();
                     })
                     .on('error', (error) => {
-                        logger.info(`acknowledge, job ${job} - error: ${error} `);
+                        logger.info(`acknowledge, clear cache job for ${dir2Clean} ` +
+                            `- error: ${error} `);
                         channelWrapper.ack(data);
                         threadCache.kill();
                     })
                     .on('exit', () => {
-                        logger.info(`thread terminated for ${job}`);
+                        logger.info(`thread terminated for clear cache job ${dir2Clean}`);
                     });
             } else {
-                logger.info(`acknowledge, ${messageProperties.get('type').toString()} ` +
-                            '- invalid - skip');
+                logger.error(`required conditions not met, cacheStrategy: ${cacheStrategy}, ` +
+                    `cachePath: ${cachePath}, cacheConfig: ${buildConfig}, ` +
+                    `acknowledge data: ${data}, payload: ${data.content} `);
                 channelWrapper.ack(data);
             }
         } else {
             const thread = spawn('./lib/jobs.js');
-            const fullBuildConfig = JSON.parse(data.content);
-            const buildConfig = fullBuildConfig.buildConfig;
-            const jobType = fullBuildConfig.job;
             let retryCount = 0;
-
             const job = `jobId: ${buildConfig.jobId}, ` +
                 `jobType: ${jobType}, buildId: ${buildConfig.buildId}`;
 
             logger.info(`processing ${job}`);
 
-            if (messageProperties.get('headers-x-death') !== undefined) {
-                retryCount = messageProperties.get('headers-x-death')[0].count;
-                logger.info(`retrying ${retryCount}(${messageReprocessLimit}) for ` +
-                    `${job}`);
+            if (typeof data.properties.headers !== 'undefined') {
+                if (Object.keys(data.properties.headers).length > 0) {
+                    retryCount = data.properties.headers['x-death'][0].count;
+                    logger.info(`retrying ${retryCount}(${messageReprocessLimit}) for ` +
+                        `${job}`);
+                }
             }
 
             thread

@@ -21,21 +21,6 @@ describe('Cache Test', () => {
     // mock fs
     let mockFs;
     let cache;
-    let helper;
-
-    /**
-     * get message properties type as json and id
-     * @method getData
-     * @param  {json}   data  json data
-     * @return {array}        message properties type as json, id
-     */
-    function getData(data) {
-        const messageProperties = helper.getMessageProperties(data.properties);
-        const type = messageProperties.get('type');
-        const id = messageProperties.get('id');
-
-        return [type, id];
-    }
 
     /**
      * sinon stub fs remove method return based on param p
@@ -53,26 +38,25 @@ describe('Cache Test', () => {
      * @param  {p}      Promise  promise.resolve() or promise.reject('err')
      */
     function test(data, p) {
-        const cacheStrategy = 'disk';
         const cachePath = '/persistent_cache';
-        const result = getData(data);
-        const type = result[0];
-        const id = result[1];
-        const job = `jobType: ${type.resource}, action: ${type.action}, ` +
-            `cacheStrategy: ${cacheStrategy}, cachePath: ${cachePath}, ` +
-            ` prefix: ${type.prefix}, scope: ${type.scope}, ` +
-            ` id: ${type.id}`;
+        let dir2Clean = (data.prefix !== '') ? `${cachePath}/${data.prefix}` : `${cachePath}`;
+
+        dir2Clean = `${dir2Clean}/${data.scope}/${data.pipelineId}`;
+
+        if (data.scope !== 'pipelines') {
+            dir2Clean = `${dir2Clean}/${data.id}`;
+        }
 
         stubFs(p);
 
         if (p === Promise.resolve()) {
-            return cache([job, cachePath, type.prefix, type.scope, id])
+            return cache([dir2Clean])
                 .then((ok) => {
                     assert.ok(ok);
                 });
         }
 
-        return cache([job, cachePath, type.prefix, type.scope, id])
+        return cache([dir2Clean])
             .catch((err) => {
                 assert.deepEqual(err, 'error deleting directory');
             });
@@ -82,8 +66,6 @@ describe('Cache Test', () => {
         mockFs = sinon.stub(fs, 'remove');
         // eslint-disable-next-line global-require
         cache = require('../lib/cache.js');
-        // eslint-disable-next-line global-require
-        helper = require('../lib/helper.js');
     });
 
     afterEach(function () {
