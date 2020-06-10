@@ -20,7 +20,7 @@ let channelWrapper;
  *            jobType = 'start' (or) 'stop' => message is to start or stop build.
  *            jobType = 'clear' => message is to clear pipeline or job cache directory.
  *              message should be in below json format:
- *                  type: { "resource": "caches", "action": "delete", "scope": "pipelines", "prefix": "", "pipelineId": 1, "id": 1 }
+ *                  {"job":"clear","cacheConfig":{"resource":"caches","action":"delete","scope":"pipelines","prefix":"","pipelineId": 1,id":1}}
  *                  scope => "pipelines" (or) jobs; id => based on scope, either pipeline id (or) job id
  * @param  {Object} data  Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message
  */
