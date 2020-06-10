@@ -17,9 +17,9 @@ let channelWrapper;
  *            meaning if consumed messages are not ack'd or nack'd, it will not fetch more messages. Definitely need
  *            to ack or nack messages, otherwise it will halt indefinitely. submit start or stop jobs to build executor
  *            using threads.
- *            jobType = 'start' (or) 'stop' => message is to start or stop build.
- *            jobType = 'clear' => message is to clear pipeline or job cache directory.
- *              message should be in below json format:
+ *            job = 'start' (or) 'stop' => message is to start or stop build.
+ *            job = 'clear' => message is to clear pipeline or job cache directory.
+ *              clear cache message should be in below json format:
  *                  {"job":"clear","cacheConfig":{"resource":"caches","action":"delete","scope":"pipelines","prefix":"","pipelineId": 1,id":1}}
  *                  scope => "pipelines" (or) jobs; id => based on scope, either pipeline id (or) job id
  * @param  {Object} data  Message from queue with headers, timestamp, and other properties; will be used to ack or nack the message
