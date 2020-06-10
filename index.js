@@ -35,7 +35,7 @@ const onMessage = (data) => {
                 const threadCache = spawn('./lib/cache.js');
                 const job = `jobType: ${messageType.resource}, action: ${messageType.action}, ` +
                             `cacheStrategy: ${cacheStrategy}, cachePath: ${cachePath}, ` +
-                            ` prefix: ${messageType.prefix}, entity: ${messageType.scope}, ` +
+                            ` prefix: ${messageType.prefix}, scope: ${messageType.scope}, ` +
                             ` id: ${messageType.id}`;
 
                 logger.info(`processing ${job}`);
