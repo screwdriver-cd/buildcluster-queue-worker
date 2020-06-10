@@ -1,18 +1,11 @@
 {
-    "properties": {
-        "headers": {
-            "x-death": [  { "count": 1,  "reason": "rejected",  "time": { "!": "timestamp", "value": 1589754141 } } ],
-            "x-first-death-exchange": "",
-            "x-first-death-queue": "test",
-            "x-first-death-reason": "rejected"
-        },
-        "type": {
-            "resource": "caches",
-            "action": "delete",
-            "scope": "jobs",
-            "prefix":"",
-            "id": 12345
-        }
-    },
-    "content": {}
+    "job": "clear",
+    "cacheConfig": {
+        "resources": "caches",
+        "action": "delete",
+        "scope": "jobs",
+        "prefix": "",
+        "id": 5,
+        "pipelineId": 1
+    }
 }
