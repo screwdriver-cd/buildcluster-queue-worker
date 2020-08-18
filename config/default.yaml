@@ -130,6 +130,7 @@ ecosystem:
         compress: false
         md5check: false
         max_size_mb: 0
+        max_go_threads: 10000
 
 rabbitmq:
     # Protocol for rabbitmq server, use amqps for ssl
