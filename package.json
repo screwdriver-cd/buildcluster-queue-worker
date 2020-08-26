@@ -1,11 +1,11 @@
 {
   "name": "screwdriver-buildcluster-queue-worker",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "description": "An amqp connection manager implementation that consumes jobs from Rabbitmq queue.",
   "main": "index.js",
   "scripts": {
     "pretest": "eslint .",
-    "test": "jenkins-mocha --recursive",
+    "test": "mocha --recursive",
     "start": "node index.js",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
@@ -35,7 +35,7 @@
     "chai": "^3.5.0",
     "eslint": "^4.3.0",
     "eslint-config-screwdriver": "^3.0.0",
-    "jenkins-mocha": "^8.0.0",
+    "mocha": "^8.1.2",
     "mockery": "^2.1.0",
     "sinon": "^7.2.5"
   },
@@ -47,9 +47,9 @@
     "fs-extra": "^9.0.0",
     "path": "^0.12.7",
     "request": "^2.88.0",
-    "screwdriver-executor-k8s": "^13.16.6",
-    "screwdriver-executor-k8s-vm": "^3.2.5",
-    "screwdriver-executor-router": "^1.2.0",
+    "screwdriver-executor-k8s": "^14.0.0",
+    "screwdriver-executor-k8s-vm": "^4.0.0",
+    "screwdriver-executor-router": "^2.0.0",
     "screwdriver-logger": "^1.0.0",
     "threads": "^0.12.1"
   },
