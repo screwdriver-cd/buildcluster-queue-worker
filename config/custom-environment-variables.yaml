@@ -86,6 +86,7 @@ executor:
             retryDelay: REQUEST_RETRYDELAY
             maxAttempts: REQUEST_MAXATTEMPTS
     k8s-sandbox:
+      pluginName: k8s
       options:
         kubernetes:
             # The host or IP of the kubernetes cluster
