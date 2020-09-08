@@ -20,6 +20,8 @@ executor:
             jobsNamespace: K8S_JOBS_NAMESPACE
             # Preferable to use service account instead of token secret
             serviceAccount: K8S_SERVICE_ACCOUNT_NAME
+            # Build pod DNS policy https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
+            dnsPolicy: K8S_POD_DNS_POLICY
             automountServiceAccountToken: K8S_AUTOMOUNT_SERVICE_ACCOUNT_TOKEN
             # feature flag to enable docker in docker
             dockerFeatureEnabled: DOCKER_FEATURE_ENABLED
