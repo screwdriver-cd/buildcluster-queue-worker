@@ -15,6 +15,7 @@ executor:
             privileged: false
             automountServiceAccountToken: false
             dockerFeatureEnabled: false
+            dnsPolicy: ClusterFirst
             resources:
                 cpu:
                     # Number of cpu cores
