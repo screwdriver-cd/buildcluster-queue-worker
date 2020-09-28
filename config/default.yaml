@@ -43,6 +43,8 @@ executor:
             annotations: {}
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: ""
+            # mount host devices
+            volumeMounts: {}
         # Launcher image to use
         launchImage: screwdrivercd/launcher
         # Container tags to use
@@ -94,6 +96,8 @@ executor:
             annotations: {}
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: ""
+            # mount host devices
+            volumeMounts: {}
         # Launcher image to use
         launchImage: screwdrivercd/launcher
         # Container tags to use

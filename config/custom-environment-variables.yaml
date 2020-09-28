@@ -72,6 +72,10 @@ executor:
               __format: json
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: K8S_RUNTIME_CLASS
+            # mount host devices
+            volumeMounts:
+              __name: K8S_VOLUME_MOUNTS
+              __format: json
         # Launcher image to use
         launchImage: LAUNCH_IMAGE
         # Launcher container tag to use
@@ -150,6 +154,10 @@ executor:
                 __format: json
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: K8S_RUNTIME_CLASS
+            # mount host devices
+            volumeMounts:
+                __name: K8S_VOLUME_MOUNTS
+                __format: json
         # Launcher image to use
         launchImage: LAUNCH_IMAGE
         # Launcher container tag to use
