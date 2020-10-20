@@ -45,6 +45,8 @@ executor:
             runtimeClass: ""
             # mount host devices
             volumeMounts: {}
+            # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
+            podStatusQueryDelay: 0
         # Launcher image to use
         launchImage: screwdrivercd/launcher
         # Container tags to use
@@ -98,7 +100,9 @@ executor:
             runtimeClass: ""
             # mount host devices
             volumeMounts: {}
-        # Launcher image to use
+            # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
+            podStatusQueryDelay: 0
+          # Launcher image to use
         launchImage: screwdrivercd/launcher
         # Container tags to use
         launchVersion: stable

@@ -76,6 +76,8 @@ executor:
             volumeMounts:
               __name: K8S_VOLUME_MOUNTS
               __format: json
+            # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
+            podStatusQueryDelay: K8S_POD_STATUSQUERY_DELAY
         # Launcher image to use
         launchImage: LAUNCH_IMAGE
         # Launcher container tag to use
@@ -158,6 +160,8 @@ executor:
             volumeMounts:
                 __name: K8S_VOLUME_MOUNTS
                 __format: json
+            # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
+            podStatusQueryDelay: K8S_POD_STATUSQUERY_DELAY
         # Launcher image to use
         launchImage: LAUNCH_IMAGE
         # Launcher container tag to use
