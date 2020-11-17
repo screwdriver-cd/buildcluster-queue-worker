@@ -37,7 +37,9 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
-            # k8s node selectors for approprate pod scheduling
+            # k8s pod labels for cluster settings
+            podLabels: {}
+            # k8s node selectors for appropriate pod scheduling
             nodeSelectors: {}
             preferredNodeSelectors: {}
             annotations: {}
@@ -92,7 +94,9 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
-            # k8s node selectors for approprate pod scheduling
+            # k8s pod labels for cluster settings
+            podLabels: {}
+            # k8s node selectors for appropriate pod scheduling
             nodeSelectors: {}
             preferredNodeSelectors: {}
             annotations: {}
@@ -148,7 +152,9 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
-            # k8s node selectors for approprate pod scheduling
+            # k8s pod labels for cluster settings
+            podLabels: {}
+            # k8s node selectors for appropriate pod scheduling
             nodeSelectors: {}
             preferredNodeSelectors: {}
         # Launcher image to use

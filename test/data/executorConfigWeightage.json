@@ -24,6 +24,7 @@
                 },
                 "buildTimeout": 90,
                 "maxBuildTimeout": 120,
+                "podLabels": {},
                 "nodeSelectors": {},
                 "preferredNodeSelectors": {},
                 "annotations": {},
@@ -66,6 +67,7 @@
                 },
                 "buildTimeout": 90,
                 "maxBuildTimeout": 120,
+                "podLabels": {},
                 "nodeSelectors": {},
                 "preferredNodeSelectors": {}
             },
