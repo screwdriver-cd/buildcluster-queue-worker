@@ -16,6 +16,7 @@ executor:
             automountServiceAccountToken: false
             dockerFeatureEnabled: false
             dnsPolicy: ClusterFirst
+            imagePullPolicy: Always
             resources:
                 cpu:
                     # Number of cpu cores

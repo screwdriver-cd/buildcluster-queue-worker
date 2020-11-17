@@ -22,6 +22,8 @@ executor:
             serviceAccount: K8S_SERVICE_ACCOUNT_NAME
             # Build pod DNS policy https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
             dnsPolicy: K8S_POD_DNS_POLICY
+            # Build pod Image Pull policy https://kubernetes.io/docs/concepts/containers/images/#updating-images
+            imagePullPolicy: K8S_POD_IMAGE_PULL_POLICY
             automountServiceAccountToken: K8S_AUTOMOUNT_SERVICE_ACCOUNT_TOKEN
             # feature flag to enable docker in docker
             dockerFeatureEnabled: DOCKER_FEATURE_ENABLED
