@@ -23,10 +23,12 @@
                 },
                 "buildTimeout": 90,
                 "maxBuildTimeout": 120,
+                "podLabels": {},
                 "nodeSelectors": {},
                 "preferredNodeSelectors": {},
                 "annotations": {},
-                "runtimeClass": ""
+                "runtimeClass": "",
+                "imagePullSecretName": ""
             },
             "launchImage": "screwdrivercd/launcher",
             "launchVersion": "stable",
@@ -64,6 +66,7 @@
                 },
                 "buildTimeout": 90,
                 "maxBuildTimeout": 120,
+                "podLabels": {},
                 "nodeSelectors": {},
                 "preferredNodeSelectors": {}
             },

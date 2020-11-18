@@ -16,6 +16,7 @@ executor:
             automountServiceAccountToken: false
             dockerFeatureEnabled: false
             dnsPolicy: ClusterFirst
+            imagePullPolicy: Always
             resources:
                 cpu:
                     # Number of cpu cores
@@ -39,12 +40,17 @@ executor:
             maxBuildTimeout: 120
             # Termination Grace period defaulted to 60 seconds
             terminationGracePeriodSeconds: 60
-            # k8s node selectors for approprate pod scheduling
+            # k8s pod labels for cluster settings
+            podLabels: {}
+            # k8s node selectors for appropriate pod scheduling
             nodeSelectors: {}
             preferredNodeSelectors: {}
             annotations: {}
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: ""
+            # image pull secret name
+            # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret
+            imagePullSecretName: ""
             # mount host devices
             volumeMounts: {}
             # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
@@ -96,12 +102,17 @@ executor:
             maxBuildTimeout: 120
             # Termination Grace period defaulted to 60 seconds
             terminationGracePeriodSeconds: 60
-            # k8s node selectors for approprate pod scheduling
+            # k8s pod labels for cluster settings
+            podLabels: {}
+            # k8s node selectors for appropriate pod scheduling
             nodeSelectors: {}
             preferredNodeSelectors: {}
             annotations: {}
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: ""
+            # image pull secret name
+            # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret
+            imagePullSecretName: ""
             # mount host devices
             volumeMounts: {}
             # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
@@ -152,9 +163,11 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
-            # k8s node selectors for approprate pod scheduling
             # Termination Grace period defaulted to 60 seconds
             terminationGracePeriodSeconds: 60
+            # k8s pod labels for cluster settings
+            podLabels: {}
+            # k8s node selectors for appropriate pod scheduling
             nodeSelectors: {}
             preferredNodeSelectors: {}
         # Launcher image to use
