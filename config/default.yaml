@@ -37,6 +37,8 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
+            # Termination Grace period defaulted to 60 seconds
+            terminationGracePeriodSeconds: 60
             # k8s node selectors for approprate pod scheduling
             nodeSelectors: {}
             preferredNodeSelectors: {}
@@ -92,6 +94,8 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
+            # Termination Grace period defaulted to 60 seconds
+            terminationGracePeriodSeconds: 60
             # k8s node selectors for approprate pod scheduling
             nodeSelectors: {}
             preferredNodeSelectors: {}
@@ -149,6 +153,8 @@ executor:
             # Default max build timeout
             maxBuildTimeout: 120
             # k8s node selectors for approprate pod scheduling
+            # Termination Grace period defaulted to 60 seconds
+            terminationGracePeriodSeconds: 60
             nodeSelectors: {}
             preferredNodeSelectors: {}
         # Launcher image to use
