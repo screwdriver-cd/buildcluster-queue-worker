@@ -27,7 +27,8 @@
                 "nodeSelectors": {},
                 "preferredNodeSelectors": {},
                 "annotations": {},
-                "runtimeClass": ""
+                "runtimeClass": "",
+                "imagePullSecretName": ""
             },
             "launchImage": "screwdrivercd/launcher",
             "launchVersion": "stable",

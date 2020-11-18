@@ -81,6 +81,9 @@ executor:
               __format: json
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: K8S_RUNTIME_CLASS
+            # image pull secret name
+            # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret
+            imagePullSecretName: K8S_IMAGE_PULL_SECRET_NAME
             # mount host devices
             volumeMounts:
               __name: K8S_VOLUME_MOUNTS
@@ -172,6 +175,9 @@ executor:
                 __format: json
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: K8S_RUNTIME_CLASS
+            # image pull secret name
+            # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret
+            imagePullSecretName: K8S_IMAGE_PULL_SECRET_NAME
             # mount host devices
             volumeMounts:
                 __name: K8S_VOLUME_MOUNTS

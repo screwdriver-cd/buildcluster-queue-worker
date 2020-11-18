@@ -46,6 +46,9 @@ executor:
             annotations: {}
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: ""
+            # image pull secret name
+            # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret
+            imagePullSecretName: ""
             # mount host devices
             volumeMounts: {}
             # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
@@ -103,6 +106,9 @@ executor:
             annotations: {}
             # support for kata-containers-as-a-runtimeclass
             runtimeClass: ""
+            # image pull secret name
+            # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret
+            imagePullSecretName: ""
             # mount host devices
             volumeMounts: {}
             # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
