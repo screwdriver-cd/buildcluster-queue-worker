@@ -38,6 +38,8 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
+            # Termination Grace period defaulted to 60 seconds
+            terminationGracePeriodSeconds: 60
             # k8s pod labels for cluster settings
             podLabels: {}
             # k8s node selectors for appropriate pod scheduling
@@ -98,6 +100,8 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
+            # Termination Grace period defaulted to 60 seconds
+            terminationGracePeriodSeconds: 60
             # k8s pod labels for cluster settings
             podLabels: {}
             # k8s node selectors for appropriate pod scheduling
@@ -159,6 +163,8 @@ executor:
             buildTimeout: 90
             # Default max build timeout
             maxBuildTimeout: 120
+            # Termination Grace period defaulted to 60 seconds
+            terminationGracePeriodSeconds: 60
             # k8s pod labels for cluster settings
             podLabels: {}
             # k8s node selectors for appropriate pod scheduling

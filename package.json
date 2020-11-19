@@ -47,8 +47,8 @@
     "fs-extra": "^9.0.0",
     "path": "^0.12.7",
     "request": "^2.88.0",
-    "screwdriver-executor-k8s": "^14.1.0",
-    "screwdriver-executor-k8s-vm": "^4.1.0",
+    "screwdriver-executor-k8s": "^14.3.1",
+    "screwdriver-executor-k8s-vm": "^4.3.0",
     "screwdriver-executor-router": "^2.0.0",
     "screwdriver-logger": "^1.0.0",
     "threads": "^0.12.1"
