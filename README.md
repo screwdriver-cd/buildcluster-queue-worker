@@ -1,5 +1,5 @@
 # Screwdriver Build Cluster Queue Worker
-[![Version][npm-image]][npm-url] ![Downloads][downloads-image] [![Build Status][status-image]][status-url] [![Open Issues][issues-image]][issues-url] [![Dependency Status][daviddm-image]][daviddm-url] ![License][license-image]
+[![Version][npm-image]][npm-url] ![Downloads][downloads-image] [![Build Status][status-image]][status-url] [![Open Issues][issues-image]][issues-url] ![License][license-image]
 
 > An amqp connection manager implementation that consumes jobs from Rabbitmq queue.
 
@@ -27,5 +27,3 @@ Code licensed under the BSD 3-Clause license. See LICENSE file for terms.
 [issues-url]: https://github.com/screwdriver-cd/buildcluster-queue-worker/issues
 [status-image]: https://cd.screwdriver.cd/pipelines/1825/badge
 [status-url]: https://cd.screwdriver.cd/pipelines/1825
-[daviddm-image]: https://david-dm.org/screwdriver-cd/buildcluster-queue-worker.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org/screwdriver-cd/buildcluster-queue-worker
