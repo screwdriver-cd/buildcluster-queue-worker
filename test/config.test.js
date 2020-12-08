@@ -1,17 +1,13 @@
 'use strict';
 
 const assert = require('chai').assert;
-const mockery = require('mockery');
-const sinon = require('sinon');
-
-sinon.assert.expose(assert, { prefix: '' });
 
 describe('config test', () => {
     const configDef = {
         ecosystem: {
             cache: {
-                strategy: 'disk',
-                path: '/persistent_cache'
+                strategy: 's3',
+                path: '/'
             }
         },
         rabbitmq: {
@@ -38,24 +34,9 @@ describe('config test', () => {
         }
     };
 
-    let configMock;
     let config;
 
-    before(() => {
-        mockery.enable({
-            useCleanCache: true,
-            warnOnUnregistered: false
-        });
-    });
-
     beforeEach(() => {
-        configMock = {
-            get: sinon.stub()
-        };
-
-        mockery.registerMock('config', configMock);
-        configMock.get.withArgs('rabbitmq').returns(configDef.rabbitmq);
-        configMock.get.withArgs('ecosystem').returns(configDef.ecosystem);
         // eslint-disable-next-line global-require
         config = require('../lib/config');
     });
@@ -72,14 +53,5 @@ describe('config test', () => {
             cacheStrategy: configDef.ecosystem.cache.strategy,
             cachePath: configDef.ecosystem.cache.path
         });
-    });
-
-    afterEach(() => {
-        mockery.deregisterAll();
-        mockery.resetCache();
-    });
-
-    after(() => {
-        mockery.disable();
     });
 });
