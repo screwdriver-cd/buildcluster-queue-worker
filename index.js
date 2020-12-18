@@ -6,8 +6,8 @@ const helper = require('./lib/helper');
 const config = require('./lib/config');
 const logger = require('screwdriver-logger');
 const { amqpURI, host, connectOptions,
-    queue, queueOptions, prefetchCount,
-    messageReprocessLimit, cacheStrategy, cachePath } = config.getConfig();
+    queue, prefetchCount, messageReprocessLimit,
+    cacheStrategy, cachePath } = config.getConfig();
 const spawn = threads.spawn;
 const CACHE_STRATEGY_DISK = 'disk';
 let channelWrapper;
@@ -142,7 +142,7 @@ connection.on('disconnect', (params) => {
 channelWrapper = connection.createChannel({
     setup(channel) {
         return Promise.all([
-            channel.checkQueue(queue, queueOptions),
+            channel.checkQueue(queue),
             channel.prefetch(prefetchCount),
             channel.consume(queue, onMessage)
         ]);

@@ -23,12 +23,6 @@ describe('config test', () => {
                 reconnectTimeInSeconds: 30
             },
             queue: 'test',
-            queueOptions: {
-                durable: true,
-                autodelete: false,
-                deadLetterExchange: 'build',
-                deadLetterRoutingKey: 'test_retry'
-            },
             prefetchCount: 20,
             messageReprocessLimit: 3
         }
@@ -47,7 +41,6 @@ describe('config test', () => {
             host: configDef.rabbitmq.host,
             connectOptions: configDef.rabbitmq.connectOptions,
             queue: configDef.rabbitmq.queue,
-            queueOptions: configDef.rabbitmq.queueOptions,
             prefetchCount: configDef.rabbitmq.prefetchCount,
             messageReprocessLimit: configDef.rabbitmq.messageReprocessLimit,
             cacheStrategy: configDef.ecosystem.cache.strategy,

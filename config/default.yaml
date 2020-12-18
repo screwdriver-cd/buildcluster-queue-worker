@@ -232,7 +232,5 @@ rabbitmq:
     queue: test
     # Prefetch count
     prefetchCount: "20"
-    # Queue options
-    queueOptions: '{ "durable": true, "autodelete": false, "deadLetterExchange": "build", "deadLetterRoutingKey": "test_retry" }'
     # Message reprocess limit - max retry for a message
     messageReprocessLimit: "3"
