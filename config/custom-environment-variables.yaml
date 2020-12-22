@@ -342,8 +342,6 @@ rabbitmq:
     connectOptions: RABBITMQ_CONNECT_OPTIONS
     # Queue name to consume from
     queue: RABBITMQ_QUEUE
-    # Queue options
-    queueOptions: RABBITMQ_QUEUE_OPTIONS
     # Prefetch count
     prefetchCount: RABBITMQ_PREFETCH_COUNT
     # Message reprocess limit
