@@ -49,9 +49,52 @@ jobs:
             # Talking to Kubernetes
             - K8S_TOKEN
 
+    # functional test
+    functional-test:
+      requires: beta
+      image: centos:centos7
+      environment:
+        PIPELINE_ID: 8188
+        INSTANCE: "https://beta.api.screwdriver.cd"
+        NAMESPACE: v4
+        TIMEOUT: 30
+      steps:
+        - install_jq: yum install epel-release -y && yum update -y && yum install jq -y && jq -Version
+        - trigger_beta_functiona_test: |
+            TOKEN=$(curl -s -S -m ${TIMEOUT} --fail ${INSTANCE}/${NAMESPACE}/auth/token?api_token=${BETA_FT_ACCESS_TOKEN} | jq -r '.token')
+            [[ -z "$TOKEN" ]] && echo "empty Token" && exit 1
+            JOB_ID=$(curl -s -S -m ${TIMEOUT} --fail -H 'Accept: application/json' -H "Authorization: Bearer ${TOKEN}" ${INSTANCE}/${NAMESPACE}/pipelines/${PIPELINE_ID}/jobs | jq -r '.[0].id')
+            [[ -z "$JOB_ID" ]] && echo "empty Job Id" && exit 1
+            BUILD_ID=$(curl -s -S -m ${TIMEOUT} --fail -d "jobId=${JOB_ID}" -H "Content-Type: application/x-www-form-urlencoded" -H "Authorization: Bearer ${TOKEN}" -X POST ${INSTANCE}/${NAMESPACE}/builds | jq -r '.id')
+            [[ -z "$BUILD_ID" ]] && echo "empty Build Id" && exit 1
+            echo "Build ${BUILD_ID} started, polling status..."
+            for attempts in {1..10}; do
+              STATUS=$(curl -s -S -m ${TIMEOUT} --fail -H "Authorization: Bearer ${TOKEN}" ${INSTANCE}/${NAMESPACE}/builds/${BUILD_ID} | jq -r '.status')
+              if [[ "${STATUS}" == "SUCCESS" ]]; then
+                echo "Build ${BUILD_ID} ${STATUS}"
+                break
+              fi
+
+              if [[ "${STATUS}" == "FAILURE" ]] || [[ "${STATUS}" == "ABORTED" ]]; then
+                echo "Build ${BUILD_ID} ${STATUS}"
+                break
+              fi
+
+              if [[ "${STATUS}" == "RUNNING" ]] || [[ "${STATUS}" == "QUEUED" ]]; then
+                echo "Build ${BUILD_ID} ${STATUS}, wait 30s..."
+                sleep 30s
+              fi
+            done
+            if [[ "${STATUS}" != "SUCCESS" ]]; then
+              echo "Build ${BUILD_ID} monitoring timed out"
+              exit 1
+            fi
+      secrets:
+          - BETA_FT_ACCESS_TOKEN
+
     # Deploy to our prod environment and run tests
     prod:
-        requires: [beta]
+        requires: functional-test
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
             - get-tag: ./ci/git-latest.sh
@@ -70,7 +113,7 @@ jobs:
 
     # Deploy to our prod environment and run tests
     prod-bf1:
-        requires: [beta]
+        requires: functional-test
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
             - get-tag: ./ci/git-latest.sh
