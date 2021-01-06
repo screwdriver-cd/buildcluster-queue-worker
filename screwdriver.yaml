@@ -60,7 +60,7 @@ jobs:
         TIMEOUT: 30
       steps:
         - install_jq: yum install epel-release -y && yum update -y && yum install jq -y && jq -Version
-        - trigger_beta_functiona_test: |
+        - trigger_beta_functional_test: |
             TOKEN=$(curl -s -S -m ${TIMEOUT} --fail ${INSTANCE}/${NAMESPACE}/auth/token?api_token=${BETA_FT_ACCESS_TOKEN} | jq -r '.token')
             [[ -z "$TOKEN" ]] && echo "empty Token" && exit 1
             JOB_ID=$(curl -s -S -m ${TIMEOUT} --fail -H 'Accept: application/json' -H "Authorization: Bearer ${TOKEN}" ${INSTANCE}/${NAMESPACE}/pipelines/${PIPELINE_ID}/jobs | jq -r '.[0].id')
