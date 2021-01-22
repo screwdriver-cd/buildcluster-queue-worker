@@ -15,6 +15,9 @@ executor:
             privileged: false
             automountServiceAccountToken: false
             dockerFeatureEnabled: false
+            dlcEnabled: false
+            dlcPath: /
+            dlcMountPath: /var/lib/docker
             dnsPolicy: ClusterFirst
             imagePullPolicy: Always
             resources:
