@@ -27,10 +27,6 @@ executor:
             automountServiceAccountToken: K8S_AUTOMOUNT_SERVICE_ACCOUNT_TOKEN
             # feature flag to enable docker in docker
             dockerFeatureEnabled: DOCKER_FEATURE_ENABLED
-            # feature flag and path for using docker layer cache
-            dlcEnabled: DOCKER_LAYER_CACHE_ENABLED
-            dlcPath: DOCKER_LAYER_CACHE_PATH
-            dlcMountPath: DOCKER_LAYER_CACHE_MOUNT_PATH
             # Resources for build pod
             resources:
                 # Number of cpu cores
