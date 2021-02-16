@@ -346,3 +346,7 @@ rabbitmq:
     prefetchCount: RABBITMQ_PREFETCH_COUNT
     # Message reprocess limit
     messageReprocessLimit: RABBITMQ_MSG_REPROCESS_LIMIT
+httpd:
+  port: PORT
+  host: HOST
+  uri: URI

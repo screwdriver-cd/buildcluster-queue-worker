@@ -234,3 +234,7 @@ rabbitmq:
     prefetchCount: "20"
     # Message reprocess limit - max retry for a message
     messageReprocessLimit: "3"
+httpd:
+    port: 80
+    host: 0.0.0.0
+    uri: http://IP_ADDRESS:PORT
