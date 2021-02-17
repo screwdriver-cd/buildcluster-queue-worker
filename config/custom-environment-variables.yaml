@@ -347,6 +347,9 @@ rabbitmq:
     # Message reprocess limit
     messageReprocessLimit: RABBITMQ_MSG_REPROCESS_LIMIT
 httpd:
+  # Port to listen on
   port: PORT
+  # Host to listen on (set to 0.0.0.0 to accept all connections)
   host: HOST
+  # Externally routable URI (usually your load balancer or CNAME)
   uri: URI
