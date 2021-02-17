@@ -235,6 +235,9 @@ rabbitmq:
     # Message reprocess limit - max retry for a message
     messageReprocessLimit: "3"
 httpd:
+    # Port to listen on
     port: 80
+    # Host to listen on (set to localhost to only accept connections from this machine)
     host: 0.0.0.0
+    # Externally routable URI (usually your load balancer or CNAME)
     uri: http://IP_ADDRESS:PORT
