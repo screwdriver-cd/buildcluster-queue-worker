@@ -8,28 +8,6 @@ const serverConfig = {
     host: '0.0.0.0'
 };
 
-describe('GET /status', () => {
-    let server;
-    const requestParam = {
-        method: 'get',
-        url: '/status'
-    };
-
-    beforeEach(async () => {
-        server = await init(serverConfig);
-    });
-
-    afterEach(async () => {
-        await server.stop();
-    });
-
-    it('responds with 200', async () => {
-        const res = await server.inject(requestParam);
-
-        assert.equal(res.statusCode, 200);
-    });
-});
-
 describe('GET /health', () => {
     let server;
     const requestParam = {
