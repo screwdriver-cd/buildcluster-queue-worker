@@ -104,17 +104,17 @@ const onMessage = (data) => {
                             `${error}`,
                             (err, response) => {
                                 if (err) {
-                                // eslint-disable-next-line max-len
+                                    // eslint-disable-next-line max-len
                                     logger.error(`failed to update build status for build ${buildConfig.buildId}: ${err} ${JSON.stringify(response)}`);
                                 } else {
-                                // eslint-disable-next-line max-len
+                                    // eslint-disable-next-line max-len
                                     logger.info(`build status successfully updated for build ${buildConfig.buildId}`);
                                 }
                             });
                         channelWrapper.ack(data);
                     } else {
                         logger.info(`err: ${error}, don't acknowledge, ` +
-                        `retried ${retryCount}(${messageReprocessLimit}) for ${job}`);
+                            `retried ${retryCount}(${messageReprocessLimit}) for ${job}`);
                         channelWrapper.nack(data, false, false);
                     }
                     thread.kill();
@@ -136,7 +136,7 @@ connection.on('connect',
 
 connection.on('disconnect', (params) => {
     logger.info(`server disconnected: ${params.err.stack}. ` +
-      `reconnecting rabbitmq server ${host}`);
+        `reconnecting rabbitmq server ${host}`);
 });
 
 channelWrapper = connection.createChannel({
@@ -153,3 +153,11 @@ channelWrapper.waitForConnect()
     .then(() => {
         logger.info(`waiting for messages in queue: ${queue}`);
     });
+
+const conf = require('config');
+const server = require('./lib/server');
+
+// Setup HTTPd
+const httpdConfig = conf.get('httpd');
+
+server(httpdConfig, connection);
