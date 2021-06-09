@@ -47,7 +47,7 @@
     "amqp-connection-manager": "^3.2.0",
     "amqplib": "^0.7.1",
     "config": "^2.0.1",
-    "fs": "0.0.1-security",
+    "fs": "0.0.2",
     "fs-extra": "^9.0.0",
     "path": "^0.12.7",
     "request": "^2.88.0",
