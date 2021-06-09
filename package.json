@@ -45,7 +45,7 @@
   "dependencies": {
     "@hapi/hapi": "^20.1.0",
     "amqp-connection-manager": "^3.2.0",
-    "amqplib": "^0.7.1",
+    "amqplib": "^0.8.0",
     "config": "^2.0.1",
     "fs": "0.0.1-security",
     "fs-extra": "^9.0.0",
