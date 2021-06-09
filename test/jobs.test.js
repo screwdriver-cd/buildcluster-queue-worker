@@ -80,7 +80,7 @@ describe('Jobs Test', () => {
 
             mockery.registerMock('screwdriver-executor-router', mockExecutorRouter);
             // eslint-disable-next-line global-require
-            jobs = require('../lib/jobs.js');
+            jobs = require('../lib/jobs');
         });
         it('starts a job', () => {
             mockExecutor.start.resolves(null);
@@ -148,7 +148,7 @@ describe('Jobs Test', () => {
             mockery.registerMock('screwdriver-executor-router', mockExecutorRouter);
 
             // eslint-disable-next-line global-require
-            jobs = require('../lib/jobs.js');
+            jobs = require('../lib/jobs');
         });
         it('starts a job with weighted executor randomly', () => {
             mockExecutor.start.resolves('k8sresult');

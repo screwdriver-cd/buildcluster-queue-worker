@@ -47,7 +47,7 @@ describe('Helper Test', () => {
         mockery.registerMock('request', mockRequest);
 
         // eslint-disable-next-line global-require
-        helper = require('../lib/helper.js');
+        helper = require('../lib/helper');
     });
 
     afterEach(() => {

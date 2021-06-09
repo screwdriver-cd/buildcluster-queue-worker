@@ -65,7 +65,7 @@ describe('Cache Test', () => {
     beforeEach(function () {
         mockFs = sinon.stub(fs, 'remove');
         // eslint-disable-next-line global-require
-        cache = require('../lib/cache.js');
+        cache = require('../lib/cache');
     });
 
     afterEach(function () {
