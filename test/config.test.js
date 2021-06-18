@@ -24,7 +24,9 @@ describe('config test', () => {
             },
             queue: 'test',
             prefetchCount: 20,
-            messageReprocessLimit: 3
+            messageReprocessLimit: 3,
+            retryQueue: 'sdRetryQueue',
+            retryQueueEnabled: true
         }
     };
 
@@ -44,7 +46,9 @@ describe('config test', () => {
             prefetchCount: configDef.rabbitmq.prefetchCount,
             messageReprocessLimit: configDef.rabbitmq.messageReprocessLimit,
             cacheStrategy: configDef.ecosystem.cache.strategy,
-            cachePath: configDef.ecosystem.cache.path
+            cachePath: configDef.ecosystem.cache.path,
+            retryQueue: configDef.rabbitmq.retryQueue,
+            retryQueueEnabled: configDef.rabbitmq.retryQueueEnabled
         });
     });
 });
