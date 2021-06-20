@@ -161,8 +161,8 @@ const onRetryMessage = async (data) => {
         }
         thread
             .send([jobType, buildConfig, job])
-            .on('message', async (successful, message) => {
-                if (!successful && message) {
+            .on('message', async (message) => {
+                if (!message) {
                     await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', message);
                 }
                 channelWrapper.ack(data);

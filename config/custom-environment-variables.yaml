@@ -105,29 +105,6 @@ executor:
             # in milliseconds
             retryDelay: REQUEST_RETRYDELAY
             maxAttempts: REQUEST_MAXATTEMPTS
-        # retryQueue:
-        #     __name: RABBITMQ_RETRYQUEUE
-        #     __format: json
-            # # Enables retry queue
-            # enabled: RABBITMQ_RETRYQUEUE_ENABLED
-            # # Host of rabbitmq cluster
-            # host: RABBITMQ_HOST
-            # # Port of rabbitmq cluster
-            # port: RABBITMQ_PORT
-            # # User to push to rabbitmq
-            # username: RABBITMQ_USERNAME
-            # # Password to connect to rabbitmq cluster
-            # password: RABBITMQ_PASSWORD
-            # # Protocol for rabbitmq server, use amqps for ssl
-            # protocol: RABBITMQ_PROTOCOL
-            # # Exchange / router name for rabbitmq
-            # exchange: RABBITMQ_EXCHANGE
-            # # Virtual host to connect to
-            # vhost: RABBITMQ_VHOST
-            # # Connection options
-            # connectOptions: RABBITMQ_CONNECT_OPTIONS
-            # # Queue to push message
-            # queue: RABBITMQ_RETRYQUEUE
     k8s-sandbox:
       pluginName: k8s
       options:
