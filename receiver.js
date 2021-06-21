@@ -208,8 +208,8 @@ const listen = async () => {
         channel.checkQueue(queue),
         channel.prefetch(prefetchCount),
         channel.consume(queue, onMessage),
-        channel.checkQueue('retryQueue'),
-        channel.consume('retryQueue', onRetryMessage)
+        channel.checkQueue(retryQueue),
+        channel.consume(retryQueue, onRetryMessage)
     ]);
 
     channelWrapper = connection.createChannel({
