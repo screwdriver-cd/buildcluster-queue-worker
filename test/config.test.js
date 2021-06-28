@@ -26,7 +26,8 @@ describe('config test', () => {
             prefetchCount: 20,
             messageReprocessLimit: 3,
             retryQueue: 'sdRetryQueue',
-            retryQueueEnabled: true
+            retryQueueEnabled: true,
+            exchange: 'build'
         }
     };
 
@@ -48,7 +49,8 @@ describe('config test', () => {
             cacheStrategy: configDef.ecosystem.cache.strategy,
             cachePath: configDef.ecosystem.cache.path,
             retryQueue: configDef.rabbitmq.retryQueue,
-            retryQueueEnabled: configDef.rabbitmq.retryQueueEnabled
+            retryQueueEnabled: configDef.rabbitmq.retryQueueEnabled,
+            exchange: configDef.rabbitmq.exchange
         });
     });
 });

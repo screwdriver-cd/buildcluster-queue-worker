@@ -238,6 +238,8 @@ rabbitmq:
     retryQueue: sdRetryQueue
     # retry queue enable/disable flag
     retryQueueEnabled: true
+    # Exchange / router name for rabbitmq
+    exchange: build
 httpd:
     # Port to listen on
     port: 80

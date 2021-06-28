@@ -328,7 +328,7 @@ ecosystem:
 rabbitmq:
     # Protocol for rabbitmq server, use amqps for ssl
     protocol: RABBITMQ_PROTOCOL
-    # User to pull from rabbitmq
+    # User to push and pull to anf from rabbitmq 
     username: RABBITMQ_USERNAME
     # Password to connect to rabbitmq cluster
     password: RABBITMQ_PASSWORD
@@ -350,6 +350,8 @@ rabbitmq:
     retryQueue: RABBITMQ_RETRYQUEUE
     # retry queue enable/disable flag
     retryQueueEnabled: RABBITMQ_RETRYQUEUE_ENABLED
+    # Exchange / router name for rabbitmq
+    exchange: RABBITMQ_EXCHANGE
 httpd:
   # Port to listen on
   port: PORT
