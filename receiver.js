@@ -144,8 +144,8 @@ const onMessage = (data) => {
  */
 const onRetryMessage = async (data) => {
     try {
-        const buildConfig = JSON.parse(data.content);
-        const jobType = buildConfig.job;
+        const parsedData = JSON.parse(data.content);
+        const { jobType, buildConfig } = parsedData;
         const thread = spawn('./lib/jobs.js');
         let retryCount = 0;
         const { buildId } = buildConfig;
