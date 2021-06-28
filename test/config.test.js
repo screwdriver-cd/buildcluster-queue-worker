@@ -27,7 +27,7 @@ describe('config test', () => {
             messageReprocessLimit: 3,
             retryQueue: 'sdRetryQueue',
             retryQueueEnabled: true,
-            exchange: 'buildexg'
+            exchange: 'build'
         }
     };
 
