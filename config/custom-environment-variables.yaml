@@ -346,6 +346,10 @@ rabbitmq:
     prefetchCount: RABBITMQ_PREFETCH_COUNT
     # Message reprocess limit
     messageReprocessLimit: RABBITMQ_MSG_REPROCESS_LIMIT
+    # Queue name of the retry queue
+    retryQueue: RABBITMQ_RETRYQUEUE
+    # retry queue enable/disable flag
+    retryQueueEnabled: RABBITMQ_RETRYQUEUE_ENABLED
 httpd:
   # Port to listen on
   port: PORT

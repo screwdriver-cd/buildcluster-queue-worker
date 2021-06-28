@@ -234,6 +234,10 @@ rabbitmq:
     prefetchCount: "20"
     # Message reprocess limit - max retry for a message
     messageReprocessLimit: "3"
+    # Queue name of the retry queue
+    retryQueue: sdRetryQueue
+    # retry queue enable/disable flag
+    retryQueueEnabled: true
 httpd:
     # Port to listen on
     port: 80
