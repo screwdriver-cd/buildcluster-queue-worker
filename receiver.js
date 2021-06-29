@@ -93,8 +93,8 @@ const onMessage = (data) => {
             thread
                 .send([jobType, buildConfig, job])
                 .on('message', (successful) => {
-                    logger.info(`acknowledge, job completed for ${job} `);
-                    if (!successful) {
+                    logger.info(`acknowledge, job completed for ${job}, result: ${successful}`);
+                    if (!successful && jobType === 'start') { // push to retry only for start jobs
                         retryQueueLib.push(buildConfig, buildId);
                     }
                     channelWrapper.ack(data);
@@ -162,6 +162,7 @@ const onRetryMessage = async (data) => {
         thread
             .send([jobType, buildConfig, job])
             .on('message', async (message) => {
+                logger.info(`acknowledge, job completed for ${job}, result: ${message}`);
                 if (message) {
                     await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', message);
                 }
