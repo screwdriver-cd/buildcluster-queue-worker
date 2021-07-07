@@ -176,7 +176,7 @@ const onRetryMessage = async (data) => {
                 } else {
                     logger.info(`err: ${error}, don't acknowledge, retried ` +
                         `${retryCount}(${messageReprocessLimit}) for ${job}`);
-                    channelWrapper.nack(data, false, false);
+                    channelWrapper.nack(data, false, true); // requeue it instead of deadlettering
                 }
                 thread.kill();
             })
