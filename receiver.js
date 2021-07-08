@@ -164,14 +164,26 @@ const onRetryMessage = async (data) => {
             .on('message', async (message) => {
                 logger.info(`acknowledge, job completed for ${job}, result: ${message}`);
                 if (message) {
-                    await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', message);
+                    try {
+                        await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', message);
+                        logger.info(`build status successfully updated for build ${buildId}`);
+                    } catch (err) {
+                        logger.error('Failed to update build status' +
+                            `to FAILURE for build:${buildId}:${err}`);
+                    }
                 }
                 channelWrapper.ack(data);
             })
             .on('error', async (error) => {
                 if (retryCount >= messageReprocessLimit) {
-                    logger.info(`acknowledge, max retries exceeded for ${job}`);
-                    await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', error);
+                    logger.info(`acknowledge, max retries exceeded for ${job} ${error}`);
+                    try {
+                        await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', error.message);
+                        logger.info(`build status successfully updated for build ${buildId}`);
+                    } catch (err) {
+                        logger.error('Failed to update build status' +
+                            `to FAILURE for build:${buildId}:${err}`);
+                    }
                     channelWrapper.ack(data);
                 } else {
                     logger.info(`err: ${error}, don't acknowledge, retried ` +
