@@ -1,6 +1,6 @@
 'use strict';
 
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const mockery = require('mockery');
 const sinon = require('sinon');
 const fs = require('fs');
@@ -41,7 +41,9 @@ describe('Jobs Test', () => {
             stop: sinon.stub()
         };
 
-        mockExecutorRouter = function () { return mockExecutor; };
+        mockExecutorRouter = function() {
+            return mockExecutor;
+        };
 
         mockEcosystemConfig = {
             ui: 'foo.ui',
@@ -84,50 +86,48 @@ describe('Jobs Test', () => {
         });
         it('starts a job', () => {
             mockExecutor.start.resolves(null);
-            const job = `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
+            const job =
+                `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 'start', buildId: ${fullBuildConfig.buildConfig.buildId}`;
 
-            return jobs(['start', fullBuildConfig.buildConfig, job])
-                .then(() => {
-                    assert.calledWith(mockExecutor.start, fullBuildConfig.buildConfig);
-                });
+            return jobs(['start', fullBuildConfig.buildConfig, job]).then(() => {
+                assert.calledWith(mockExecutor.start, fullBuildConfig.buildConfig);
+            });
         });
 
         it('stops a job', () => {
             mockExecutor.stop.resolves(null);
-            const job = `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
+            const job =
+                `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 'stop', buildId: ${fullBuildConfig.buildConfig.buildId}`;
 
-            return jobs(['stop', fullBuildConfig.buildConfig, job])
-                .then(() => {
-                    assert.calledWith(mockExecutor.stop, fullBuildConfig.buildConfig);
-                });
+            return jobs(['stop', fullBuildConfig.buildConfig, job]).then(() => {
+                assert.calledWith(mockExecutor.stop, fullBuildConfig.buildConfig);
+            });
         });
 
         it('invalid jobType', () => {
             mockExecutor.start.resolves(null);
             mockExecutor.stop.resolves(null);
-            const job = `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
+            const job =
+                `jobId: ${fullBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 's', buildId: ${fullBuildConfig.buildConfig.buildId}`;
 
-            return jobs(['s', fullBuildConfig.buildConfig, job])
-                .then(() => {
-                    assert.notCalled(mockExecutor.start);
-                    assert.notCalled(mockExecutor.stop);
-                });
+            return jobs(['s', fullBuildConfig.buildConfig, job]).then(() => {
+                assert.notCalled(mockExecutor.start);
+                assert.notCalled(mockExecutor.stop);
+            });
         });
         it('starts a job with default plugin when no weight and no annotation present', () => {
             mockExecutor.start.resolves(null);
             const overrideBuildConfig = fullBuildConfig.buildConfig;
 
             delete overrideBuildConfig.annotations;
-            const job = `jobId: ${overrideBuildConfig.buildId}, ` +
-                `jobType: 'start', buildId: ${overrideBuildConfig.buildId}`;
+            const job = `jobId: ${overrideBuildConfig.buildId}, jobType: 'start', buildId: ${overrideBuildConfig.buildId}`;
 
-            return jobs(['start', overrideBuildConfig, job])
-                .then(() => {
-                    assert.calledWith(mockExecutor.start, overrideBuildConfig);
-                });
+            return jobs(['start', overrideBuildConfig, job]).then(() => {
+                assert.calledWith(mockExecutor.start, overrideBuildConfig);
+            });
         });
     });
 
@@ -152,14 +152,14 @@ describe('Jobs Test', () => {
         });
         it('starts a job with weighted executor randomly', () => {
             mockExecutor.start.resolves('k8sresult');
-            const job = `jobId: ${anotherBuildConfig.buildConfig.buildId}, ` +
+            const job =
+                `jobId: ${anotherBuildConfig.buildConfig.buildId}, ` +
                 `jobType: 'start', buildId: ${anotherBuildConfig.buildConfig.buildId}`;
 
-            return jobs(['start', anotherBuildConfig.buildConfig, job])
-                .then((result) => {
-                    assert.deepEqual(result, 'k8sresult');
-                    assert.calledWith(mockExecutor.start, anotherBuildConfig.buildConfig);
-                });
+            return jobs(['start', anotherBuildConfig.buildConfig, job]).then(result => {
+                assert.deepEqual(result, 'k8sresult');
+                assert.calledWith(mockExecutor.start, anotherBuildConfig.buildConfig);
+            });
         });
 
         it('starts a job with executor annotations k8s-vm and not weighted', () => {
@@ -169,13 +169,11 @@ describe('Jobs Test', () => {
                     'beta.screwdriver.cd/executor': 'k8s-vm'
                 }
             });
-            const job = `jobId: ${overrideBuildConfig.buildId}, ` +
-                `jobType: 'start', buildId: ${overrideBuildConfig.buildId}`;
+            const job = `jobId: ${overrideBuildConfig.buildId}, jobType: 'start', buildId: ${overrideBuildConfig.buildId}`;
 
-            return jobs(['start', overrideBuildConfig, job])
-                .then(() => {
-                    assert.calledWith(mockExecutor.start, overrideBuildConfig);
-                });
+            return jobs(['start', overrideBuildConfig, job]).then(() => {
+                assert.calledWith(mockExecutor.start, overrideBuildConfig);
+            });
         });
     });
 });

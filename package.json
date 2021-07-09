@@ -32,21 +32,22 @@
     "Tiffany Kyi <tiffanykyi@gmail.com>"
   ],
   "devDependencies": {
-    "chai": "^3.5.0",
-    "eslint": "^4.3.0",
-    "eslint-config-screwdriver": "^3.0.0",
+    "chai": "^4.3.4",
+    "eslint": "^7.5.0",
+    "eslint-config-screwdriver": "^5.0.1",
     "mocha": "^8.4.0",
     "mocha-multi-reporters": "^1.5.1",
     "mocha-sonarqube-reporter": "^1.0.2",
     "mockery": "^2.1.0",
     "nyc": "^15.0.0",
-    "sinon": "^7.5.0"
+    "sinon": "^9.0.0"
   },
   "dependencies": {
-    "@hapi/hapi": "^20.1.0",
+    "@hapi/hapi": "^20.1.5",
     "amqp-connection-manager": "^3.2.2",
     "amqplib": "^0.8.0",
     "config": "^2.0.1",
+    "eslint-plugin-import": "^2.23.4",
     "fs": "0.0.2",
     "fs-extra": "^9.1.0",
     "path": "^0.12.7",

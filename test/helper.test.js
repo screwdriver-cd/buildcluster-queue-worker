@@ -1,6 +1,6 @@
 'use strict';
 
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const mockery = require('mockery');
 const sinon = require('sinon');
 const fs = require('fs');
@@ -60,34 +60,26 @@ describe('Helper Test', () => {
         mockery.disable();
     });
 
-    it('logs correct message when successfully update build failure status', (done) => {
+    it('logs correct message when successfully update build failure status', done => {
         mockRequest.yieldsAsync(null, { statusCode: 200 });
 
-        helper.updateBuildStatus(
-            fullBuildConfig.buildConfig,
-            status,
-            statusMessage,
-            (err) => {
-                assert.calledWith(mockRequest, requestOptions);
-                assert.isNull(err);
-                done();
-            });
+        helper.updateBuildStatus(fullBuildConfig.buildConfig, status, statusMessage, err => {
+            assert.calledWith(mockRequest, requestOptions);
+            assert.isNull(err);
+            done();
+        });
     });
 
-    it('logs correct message when fail to update build failure status', (done) => {
+    it('logs correct message when fail to update build failure status', done => {
         const requestErr = new Error('failed to update');
         const response = {};
 
         mockRequest.yieldsAsync(requestErr, response);
 
-        helper.updateBuildStatus(
-            fullBuildConfig.buildConfig,
-            status,
-            statusMessage,
-            (err) => {
-                assert.calledWith(mockRequest, requestOptions);
-                assert.strictEqual(err.message, 'failed to update');
-                done();
-            });
+        helper.updateBuildStatus(fullBuildConfig.buildConfig, status, statusMessage, err => {
+            assert.calledWith(mockRequest, requestOptions);
+            assert.strictEqual(err.message, 'failed to update');
+            done();
+        });
     });
 });

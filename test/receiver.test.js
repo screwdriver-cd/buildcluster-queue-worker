@@ -65,7 +65,6 @@ describe('rabbitmq message consumer test', async () => {
                     createChannel: sinon.stub().returns({
                         publish: sinon.stub().resolves(),
                         waitForConnect: sinon.stub().resolves()
-
                     })
                 };
             }
