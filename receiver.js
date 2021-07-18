@@ -187,6 +187,7 @@ const onRetryMessage = async data => {
                     }
                 }
                 channelWrapper.ack(data);
+                thread.kill();
             })
             .on('error', async error => {
                 if (retryCount >= messageReprocessLimit) {
