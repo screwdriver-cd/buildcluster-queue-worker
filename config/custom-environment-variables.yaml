@@ -90,6 +90,11 @@ executor:
               __format: json
             # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
             podStatusQueryDelay: K8S_POD_STATUSQUERY_DELAY
+            # secrets to be exposed inside build container as environment variables
+            buildSecrets:
+              __name: K8S_SECRETS
+              __format: json
+
         # Launcher image to use
         launchImage: LAUNCH_IMAGE
         # Launcher container tag to use
