@@ -55,6 +55,8 @@ executor:
             volumeMounts: {}
             # Number of milliseconds to wait before calling k8s pod query status for pending retry strategy
             podStatusQueryDelay: 0
+            # secrets to be exposed inside build container as environment variables
+            buildSecrets: {}
         # Launcher image to use
         launchImage: screwdrivercd/launcher
         # Container tags to use
