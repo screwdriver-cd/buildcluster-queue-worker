@@ -1,11 +1,13 @@
 shared:
-    image: node:12
-
+    environment:
+        # Docker hub repo
+        DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
 jobs:
     main:
         environment:
             SD_SONAR_OPTS: "-Dsonar.sources=index.js,lib -Dsonar.tests=test -Dsonar.javascript.lcov.reportPaths=artifacts/coverage/lcov.info -Dsonar.testExecutionReportPaths=artifacts/report/test.xml"
         requires: [~pr, ~commit]
+        image: node:12
         steps:
             - install: npm install
             - test: npm test
@@ -19,20 +21,13 @@ jobs:
             # Pushing tags to Git
             - GH_TOKEN
 
-    docker-trigger:
+    docker-publish:
         requires: publish
-        steps:
-            - trigger: git clone https://github.com/screwdriver-cd/toolbox.git ci && ./ci/git-latest.sh && DOCKER_TAG=`cat VERSION` ./ci/docker-trigger.sh
-        environment:
-            # Docker hub repo
-            DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
-        secrets:
-            # Trigger a Docker Hub build
-            - DOCKER_TRIGGER
-
+        template: sd/dind@latest
     # Deploy to beta environment
     beta:
-        requires: docker-trigger
+        requires: docker-publish
+        image: node:12
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
             - get-tag: ./ci/git-latest.sh
@@ -40,7 +35,6 @@ jobs:
             - deploy-k8s: K8S_TAG=`cat VERSION` ./ci/k8s-deploy.sh
             - test: echo Put acceptance tests here
         environment:
-            DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
             K8S_CONTAINER: screwdriver-buildcluster-queue-worker
             K8S_IMAGE: screwdrivercd/buildcluster-queue-worker
             K8S_HOST: kubernetes.default.svc
@@ -95,6 +89,7 @@ jobs:
     # Deploy to our prod environment and run tests
     prod:
         requires: functional-test
+        image: node:12
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
             - get-tag: ./ci/git-latest.sh
@@ -102,7 +97,6 @@ jobs:
             - deploy-k8s: K8S_TAG=`cat VERSION` ./ci/k8s-deploy.sh
             - test: echo Put acceptance tests here
         environment:
-            DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
             K8S_CONTAINER: screwdriver-buildcluster-queue-worker
             K8S_IMAGE: screwdrivercd/buildcluster-queue-worker
             K8S_HOST: kubernetes.default.svc
@@ -114,6 +108,7 @@ jobs:
     # Deploy to our prod environment and run tests
     prod-bf1:
         requires: functional-test
+        image: node:12
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
             - get-tag: ./ci/git-latest.sh
@@ -121,7 +116,6 @@ jobs:
             - deploy-k8s: K8S_TAG=`cat VERSION` ./ci/k8s-deploy.sh
             - test: echo Put acceptance tests here
         environment:
-            DOCKER_REPO: screwdrivercd/buildcluster-queue-worker
             K8S_CONTAINER: screwdriver-buildcluster-queue-worker
             K8S_IMAGE: screwdrivercd/buildcluster-queue-worker
             K8S_HOST: kubernetes.default.svc
