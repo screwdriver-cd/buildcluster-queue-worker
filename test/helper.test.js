@@ -23,7 +23,7 @@ describe('Helper Test', () => {
     const status = 'FAILURE';
     const statusMessage = 'exhausted retries';
     const requestOptions = {
-        context: { token: 'fake', caller: 'updateBuildStatusAsync' },
+        context: { token: 'fake' },
         method: 'PUT',
         json: {
             status,
