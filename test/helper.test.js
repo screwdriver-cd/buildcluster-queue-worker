@@ -23,14 +23,13 @@ describe('Helper Test', () => {
     const status = 'FAILURE';
     const statusMessage = 'exhausted retries';
     const requestOptions = {
-        auth: { bearer: 'fake' },
-        json: true,
+        context: { token: 'fake' },
         method: 'PUT',
-        body: {
+        json: {
             status,
             statusMessage
         },
-        uri: `foo.bar/v4/builds/${fullBuildConfig.buildConfig.buildId}`
+        url: `foo.bar/v4/builds/${fullBuildConfig.buildConfig.buildId}`
     };
     let mockRequest;
     let helper;
@@ -44,7 +43,7 @@ describe('Helper Test', () => {
 
     beforeEach(() => {
         mockRequest = sinon.stub();
-        mockery.registerMock('request', mockRequest);
+        mockery.registerMock('screwdriver-request', mockRequest);
 
         // eslint-disable-next-line global-require
         helper = require('../lib/helper');
@@ -60,26 +59,24 @@ describe('Helper Test', () => {
         mockery.disable();
     });
 
-    it('logs correct message when successfully update build failure status', done => {
-        mockRequest.yieldsAsync(null, { statusCode: 200 });
+    it('logs correct message when successfully update build failure status', async () => {
+        mockRequest.resolves({ statusCode: 200 });
 
-        helper.updateBuildStatus(fullBuildConfig.buildConfig, status, statusMessage, err => {
-            assert.calledWith(mockRequest, requestOptions);
-            assert.isNull(err);
-            done();
-        });
+        await helper.updateBuildStatusAsync(fullBuildConfig.buildConfig, status, statusMessage);
+
+        assert.calledWith(mockRequest, requestOptions);
     });
 
-    it('logs correct message when fail to update build failure status', done => {
+    it('logs correct message when fail to update build failure status', async () => {
         const requestErr = new Error('failed to update');
-        const response = {};
 
-        mockRequest.yieldsAsync(requestErr, response);
+        mockRequest.rejects(requestErr);
 
-        helper.updateBuildStatus(fullBuildConfig.buildConfig, status, statusMessage, err => {
+        try {
+            await helper.updateBuildStatusAsync(fullBuildConfig.buildConfig, status, statusMessage);
+        } catch (err) {
             assert.calledWith(mockRequest, requestOptions);
             assert.strictEqual(err.message, 'failed to update');
-            done();
-        });
+        }
     });
 });

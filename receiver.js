@@ -113,22 +113,15 @@ const onMessage = data => {
                     channelWrapper.ack(data);
                     thread.kill();
                 })
-                .on('error', error => {
+                .on('error', async error => {
                     if (retryCount >= messageReprocessLimit) {
                         logger.info(`acknowledge, max retries exceeded for ${job}`);
-                        helper.updateBuildStatus(buildConfig, 'FAILURE', `${error}`, (err, response) => {
-                            if (err) {
-                                // eslint-disable-next-line max-len
-                                logger.error(
-                                    `failed to update build status for build ${buildId}: ${err} ${JSON.stringify(
-                                        response
-                                    )}`
-                                );
-                            } else {
-                                // eslint-disable-next-line max-len
-                                logger.info(`build status successfully updated for build ${buildId}`);
-                            }
-                        });
+                        try {
+                            await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', `${error}`);
+                            logger.info(`build status successfully updated for build ${buildId}`);
+                        } catch (err) {
+                            logger.error(`Failed to update build status to FAILURE for build:${buildId}:${err}`);
+                        }
                         channelWrapper.ack(data);
                     } else {
                         logger.info(
@@ -183,7 +176,7 @@ const onRetryMessage = async data => {
                         await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', message);
                         logger.info(`build status successfully updated for build ${buildId}`);
                     } catch (err) {
-                        logger.error(`Failed to update build statusto FAILURE for build:${buildId}:${err}`);
+                        logger.error(`Failed to update build status to FAILURE for build:${buildId}:${err}`);
                     }
                 }
                 channelWrapper.ack(data);
@@ -196,7 +189,7 @@ const onRetryMessage = async data => {
                         await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', error.message);
                         logger.info(`build status successfully updated for build ${buildId}`);
                     } catch (err) {
-                        logger.error(`Failed to update build statusto FAILURE for build:${buildId}:${err}`);
+                        logger.error(`Failed to update build status to FAILURE for build:${buildId}:${err}`);
                     }
                     channelWrapper.ack(data);
                 } else {
