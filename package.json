@@ -33,7 +33,7 @@
   ],
   "devDependencies": {
     "chai": "^4.3.4",
-    "eslint": "^7.5.0",
+    "eslint": "^7.32.0",
     "eslint-config-screwdriver": "^5.0.1",
     "mocha": "^8.4.0",
     "mocha-multi-reporters": "^1.5.1",
@@ -44,17 +44,17 @@
   },
   "dependencies": {
     "@hapi/hapi": "^20.1.5",
-    "amqp-connection-manager": "^3.2.2",
+    "amqp-connection-manager": "^3.5.2",
     "amqplib": "^0.8.0",
     "config": "^2.0.1",
     "fs": "0.0.2",
     "fs-extra": "^9.1.0",
     "path": "^0.12.7",
-    "screwdriver-executor-k8s": "^14.12.1",
+    "screwdriver-executor-k8s": "^14.14.1",
     "screwdriver-executor-k8s-vm": "^4.3.0",
     "screwdriver-executor-router": "^2.3.0",
-    "screwdriver-logger": "^1.0.2",
-    "screwdriver-request": "^1.0.1",
+    "screwdriver-logger": "^1.1.0",
+    "screwdriver-request": "^1.0.3",
     "threads": "^0.12.1"
   },
   "release": {
