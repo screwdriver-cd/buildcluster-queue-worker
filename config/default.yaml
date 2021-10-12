@@ -239,7 +239,7 @@ rabbitmq:
     # Queue name of the retry queue
     retryQueue: sdRetryQueue
     # retry queue enable/disable flag
-    retryQueueEnabled: true
+    retryQueueEnabled: false
     # Exchange / router name for rabbitmq
     exchange: build
 httpd:
