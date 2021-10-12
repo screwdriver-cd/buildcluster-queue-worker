@@ -26,7 +26,7 @@ describe('config test', () => {
             prefetchCount: 20,
             messageReprocessLimit: 3,
             retryQueue: 'sdRetryQueue',
-            retryQueueEnabled: true,
+            retryQueueEnabled: false,
             exchange: 'build'
         }
     };
