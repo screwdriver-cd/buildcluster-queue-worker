@@ -15,7 +15,8 @@ const {
     messageReprocessLimit,
     cacheStrategy,
     cachePath,
-    retryQueue
+    retryQueue,
+    retryQueueEnabled
 } = config.getConfig();
 const { spawn } = threads;
 const CACHE_STRATEGY_DISK = 'disk';
@@ -225,21 +226,25 @@ const listen = async () => {
         logger.info(`server disconnected: ${params.err.stack}. reconnecting rabbitmq server ${host}`);
     });
 
-    const setup = channel =>
-        Promise.all([
-            channel.checkQueue(queue),
-            channel.prefetch(prefetchCount),
-            channel.consume(queue, onMessage),
-            channel.checkQueue(retryQueue),
-            channel.consume(retryQueue, onRetryMessage)
-        ]);
+    const setup = channel => {
+        const queueFn = [channel.checkQueue(queue), channel.prefetch(prefetchCount), channel.consume(queue, onMessage)];
+
+        if (retryQueueEnabled) {
+            queueFn.concat([channel.checkQueue(retryQueue), channel.consume(retryQueue, onRetryMessage)]);
+        }
+
+        return Promise.all(queueFn);
+    };
 
     channelWrapper = connection.createChannel({
         setup
     });
 
     channelWrapper.waitForConnect().then(() => {
-        logger.info(`waiting for messages in queues: ${queue} | ${retryQueue}`);
+        logger.info(`waiting for messages in queues: ${queue}`);
+        if (retryQueueEnabled) {
+            logger.info(`waiting for messages in queues: ${retryQueue}`);
+        }
     });
 
     return connection;
