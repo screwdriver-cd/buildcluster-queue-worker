@@ -94,7 +94,10 @@ executor:
             buildSecrets:
               __name: K8S_SECRETS
               __format: json
-
+            # secrets to be exposed inside build container as environment variables
+            buildSecretsFile:
+              __name: K8S_SECRETS_FILE
+              __format: json
         # Launcher image to use
         launchImage: LAUNCH_IMAGE
         # Launcher container tag to use

@@ -57,6 +57,8 @@ executor:
             podStatusQueryDelay: 0
             # secrets to be exposed inside build container as environment variables
             buildSecrets: {}
+            # secrets to be exposed inside build container as files
+            buildSecretFile: {}
         # Launcher image to use
         launchImage: screwdrivercd/launcher
         # Container tags to use
