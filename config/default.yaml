@@ -73,7 +73,7 @@ executor:
             # in milliseconds
             retryDelay: 3000
             maxAttempts: 5
-        sdHabEnabled: yes
+        sdHabEnabled: true
     k8s-sandbox:
       pluginName: k8s
       options:
@@ -136,7 +136,7 @@ executor:
             # in milliseconds
             retryDelay: 3000
             maxAttempts: 5
-        sdHabEnabled: yes
+        sdHabEnabled: true
     k8s-vm:
       pluginName: k8s-vm
       weightage: 0
@@ -190,7 +190,7 @@ executor:
             # in milliseconds
             retryDelay: 3000
             maxAttempts: 5
-        sdHabEnabled: yes
+        sdHabEnabled: true
 #     jenkins:
 #       options:
 #         # Configuration of Jenkins
