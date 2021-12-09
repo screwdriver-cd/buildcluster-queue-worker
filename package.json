@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com:screwdriver-cd/buildcluster-queue-worker.git"
+    "url": "git+https://github.com/screwdriver-cd/buildcluster-queue-worker.git"
   },
   "homepage": "https://github.com/screwdriver-cd/buildcluster-queue-worker",
   "bugs": "https://github.com/screwdriver-cd/screwdriver/issues",
