@@ -8,7 +8,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Install Screwdriver build cluster queue worker
-RUN npm install screwdriver-buildcluster-queue-worker@$VERSION --no-package-lock
+RUN npm install screwdriver-buildcluster-queue-worker@$VERSION
 WORKDIR /usr/src/app/node_modules/screwdriver-buildcluster-queue-worker
 
 # Run the service
