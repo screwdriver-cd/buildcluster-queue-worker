@@ -118,7 +118,6 @@ const onMessage = data => {
                     thread.kill();
                     if (['403', '404'].includes(error.message.substring(0, 3))) {
                         channelWrapper.ack(data);
-                        console.log('DEBUG: error handling');
 
                         return;
                     }
