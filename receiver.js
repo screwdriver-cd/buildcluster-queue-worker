@@ -115,6 +115,14 @@ const onMessage = data => {
                     thread.kill();
                 })
                 .on('error', async error => {
+                    thread.kill();
+                    if (['403', '404'].includes(error.message.substring(0, 3))) {
+                        channelWrapper.ack(data);
+                        console.log('DEBUG: error handling');
+
+                        return;
+                    }
+
                     if (retryCount >= messageReprocessLimit) {
                         logger.info(`acknowledge, max retries exceeded for ${job}`);
                         try {
@@ -131,7 +139,6 @@ const onMessage = data => {
                         );
                         channelWrapper.nack(data, false, false);
                     }
-                    thread.kill();
                 })
                 .on('exit', () => {
                     logger.info(`thread terminated for ${job} `);
