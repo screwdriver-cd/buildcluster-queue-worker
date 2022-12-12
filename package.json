@@ -1,6 +1,6 @@
 {
   "name": "screwdriver-buildcluster-queue-worker",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "An amqp connection manager implementation that consumes jobs from Rabbitmq queue.",
   "main": "index.js",
   "scripts": {
@@ -31,29 +31,29 @@
     "Tiffany Kyi <tiffanykyi@gmail.com>"
   ],
   "devDependencies": {
-    "chai": "^4.3.4",
-    "eslint": "^7.32.0",
-    "eslint-config-screwdriver": "^5.0.1",
-    "mocha": "^8.4.0",
+    "chai": "^4.3.7",
+    "eslint": "^8.28.0",
+    "eslint-config-screwdriver": "^7.0.0",
+    "mocha": "^10.1.0",
     "mocha-multi-reporters": "^1.5.1",
     "mocha-sonarqube-reporter": "^1.0.2",
     "mockery": "^2.1.0",
-    "nyc": "^15.0.0",
-    "sinon": "^9.0.0"
+    "nyc": "^15.1.0",
+    "sinon": "^15.0.0"
   },
   "dependencies": {
-    "@hapi/hapi": "^20.1.5",
-    "amqp-connection-manager": "^3.5.2",
-    "amqplib": "^0.10.0",
-    "config": "^2.0.1",
+    "@hapi/hapi": "^21.1.0",
+    "amqp-connection-manager": "^4.1.9",
+    "amqplib": "^0.10.3",
+    "config": "^3.3.8",
     "fs": "0.0.2",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^11.1.0",
     "path": "^0.12.7",
-    "screwdriver-executor-k8s": "^14.17.1",
+    "screwdriver-executor-k8s": "^15.0.0",
     "screwdriver-executor-k8s-vm": "^4.3.0",
-    "screwdriver-executor-router": "^2.3.0",
-    "screwdriver-logger": "^1.1.0",
-    "screwdriver-request": "^1.0.3",
+    "screwdriver-executor-router": "^3.0.0",
+    "screwdriver-logger": "^2.0.0",
+    "screwdriver-request": "^2.0.1",
     "threads": "^0.12.1"
   },
   "release": {
