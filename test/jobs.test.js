@@ -41,7 +41,7 @@ describe('Jobs Test', () => {
             stop: sinon.stub()
         };
 
-        mockExecutorRouter = function() {
+        mockExecutorRouter = function () {
             return mockExecutor;
         };
 

@@ -60,13 +60,13 @@ describe('Cache Test', () => {
         });
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         mockFs = sinon.stub(fs, 'remove');
         // eslint-disable-next-line global-require
         cache = require('../lib/cache');
     });
 
-    afterEach(function() {
+    afterEach(function () {
         sinon.restore();
     });
 
