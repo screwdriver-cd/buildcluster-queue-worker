@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:18
 
 # Screwdriver Queue Worker Version
 ARG VERSION=latest
