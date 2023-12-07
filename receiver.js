@@ -139,9 +139,8 @@ const onMessage = data => {
                         channelWrapper.nack(data, false, false);
                     }
                 })
-                .on('exit', (exitCode) => {
-                    logger.info(`thread terminated for ${job} `);
-                    logger.info(`thread exit code: ${exitCode} `);
+                .on('exit', exitCode => {
+                    logger.info(`thread exit code ${exitCode} terminated for ${job}`);
                 });
         }
     } catch (err) {
@@ -209,9 +208,8 @@ const onRetryMessage = async data => {
                 }
                 thread.kill();
             })
-            .on('exit', (exitCode) => {
-                logger.info(`thread terminated for ${job} `);
-                logger.info(`thread exit code: ${exitCode} `);
+            .on('exit', exitCode => {
+                logger.info(`thread exit code ${exitCode} terminated for ${job}`);
             });
     } catch (err) {
         logger.error(`${retryQueue}: error ${err}, acknowledge data: ${data} payload: ${data.content} `);
