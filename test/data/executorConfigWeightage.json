@@ -1,5 +1,5 @@
 {
-    "plugin": "k8s-vm",
+    "plugin": "k8s-test",
     "k8s": {
         "weightage": 20,
         "options": {
@@ -44,7 +44,7 @@
             }
         }
     },
-    "k8s-vm": {
+    "k8s-test": {
         "weightage": 10,
         "options": {
             "kubernetes": {
