@@ -162,11 +162,11 @@ describe('Jobs Test', () => {
             });
         });
 
-        it('starts a job with executor annotations k8s-test and not weighted', () => {
+        it('starts a job with executor annotations k8s-vm and not weighted', () => {
             mockExecutor.start.resolves(null);
             const overrideBuildConfig = Object.assign(anotherBuildConfig.buildConfig, {
                 annotations: {
-                    'beta.screwdriver.cd/executor': 'k8s-test'
+                    'beta.screwdriver.cd/executor': 'k8s-vm'
                 }
             });
             const job = `jobId: ${overrideBuildConfig.buildId}, jobType: 'start', buildId: ${overrideBuildConfig.buildId}`;
