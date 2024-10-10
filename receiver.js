@@ -41,7 +41,6 @@ const onMessage = data => {
         const buildConfig = fullBuildConfig.buildConfig || fullBuildConfig.cacheConfig;
 
         if (jobType === 'clear') {
-            const threadCache = spawn('./lib/cache.js');
             const job = `jobType: ${jobType}, cacheConfig: ${buildConfig}`;
 
             logger.info(`processing ${job}`);
@@ -57,6 +56,7 @@ const onMessage = data => {
             ) {
                 // eslint-disable-next-line max-len
                 let dir2Clean = buildConfig.prefix !== '' ? `${cachePath}/${buildConfig.prefix}` : `${cachePath}`;
+                const threadCache = spawn('./lib/cache.js');
 
                 dir2Clean = `${dir2Clean}/${buildConfig.scope}/${buildConfig.pipelineId}`;
 
