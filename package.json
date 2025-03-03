@@ -49,7 +49,7 @@
     "fs": "0.0.2",
     "fs-extra": "^11.1.0",
     "path": "^0.12.7",
-    "screwdriver-executor-k8s": "^17.0.0",
+    "screwdriver-executor-k8s": "^17.1.0",
     "screwdriver-executor-k8s-vm": "^5.0.0",
     "screwdriver-executor-router": "^5.0.0",
     "screwdriver-logger": "^3.0.0",
