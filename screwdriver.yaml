@@ -8,7 +8,7 @@ jobs:
         environment:
             SD_SONAR_OPTS: "-Dsonar.sources=index.js,lib -Dsonar.tests=test -Dsonar.javascript.lcov.reportPaths=artifacts/coverage/lcov.info -Dsonar.testExecutionReportPaths=artifacts/report/test.xml"
         requires: [~pr, ~commit]
-        image: node:18
+        image: node:22
         steps:
             - install: npm install
             - test: npm test
@@ -28,7 +28,7 @@ jobs:
     # Deploy to beta environment
     beta:
         requires: docker-publish
-        image: node:18
+        image: node:22
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
             - get-tag: ./ci/git-latest.sh
@@ -90,7 +90,7 @@ jobs:
     # Deploy to our prod environment and run tests
     prod:
         requires: functional-test
-        image: node:18
+        image: node:22
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
             - get-tag: ./ci/git-latest.sh
@@ -109,7 +109,7 @@ jobs:
     # Deploy to our prod environment and run tests
     prod-bf1:
         requires: functional-test
-        image: node:18
+        image: node:22
         steps:
             - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git ci
             - get-tag: ./ci/git-latest.sh
