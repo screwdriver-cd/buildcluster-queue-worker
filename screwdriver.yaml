@@ -47,14 +47,14 @@ jobs:
     # functional test
     functional-test:
       requires: beta
-      image: centos:centos7
+      image: node:22
       environment:
         PIPELINE_ID: 8188
         INSTANCE: "https://beta.api.screwdriver.cd"
         NAMESPACE: v4
         TIMEOUT: 30
+        USER_SHELL_BIN: /bin/bash
       steps:
-        - install_jq: yum install epel-release -y && yum update -y && yum install jq -y && jq -Version
         - trigger_beta_functional_test: |
             TOKEN=$(curl -s -S -m ${TIMEOUT} --fail ${INSTANCE}/${NAMESPACE}/auth/token?api_token=${BETA_FT_ACCESS_TOKEN} | jq -r '.token')
             [[ -z "$TOKEN" ]] && echo "empty Token" && exit 1
