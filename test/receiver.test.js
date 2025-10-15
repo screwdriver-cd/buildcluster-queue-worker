@@ -38,7 +38,8 @@ describe('rabbitmq message consumer', async () => {
             prefetchCount: 20,
             messageReprocessLimit: 3,
             retryQueue: 'rq',
-            retryQueueEnabled: true
+            retryQueueEnabled: true,
+            initTimeout: 5
         }
     };
 
@@ -174,6 +175,62 @@ describe('rabbitmq message consumer', async () => {
             } catch (error) {
                 throw new Error('should not fail');
             }
+        });
+    });
+
+    describe('initTimeout configuration', () => {
+        let configLib;
+
+        beforeEach(() => {
+            // Use the real config module to test initTimeout
+            mockery.disable();
+            configLib = require('../lib/config');
+        });
+
+        afterEach(() => {
+            mockery.enable({
+                useCleanCache: true,
+                warnOnUnregistered: false
+            });
+        });
+
+        it('includes initTimeout in config with default value', () => {
+            const config = configLib.getConfig();
+
+            assert.isDefined(config.initTimeout);
+            assert.isNumber(config.initTimeout);
+            assert.equal(config.initTimeout, 5);
+        });
+
+        it('validates initTimeout is positive number', () => {
+            const config = configLib.getConfig();
+
+            assert.isNumber(config.initTimeout);
+            assert.isAbove(config.initTimeout, 0);
+        });
+
+        it('includes initTimeout when retry queue is enabled', () => {
+            const config = configLib.getConfig();
+
+            assert.isDefined(config.retryQueueEnabled);
+            assert.isDefined(config.initTimeout);
+        });
+
+        it('verifies timeout value is in minutes', () => {
+            const config = configLib.getConfig();
+            const timeoutInMs = config.initTimeout * 60 * 1000;
+
+            assert.equal(timeoutInMs, 300000);
+        });
+
+        it('verifies config structure includes all required fields', () => {
+            const config = configLib.getConfig();
+
+            assert.isDefined(config.amqpURI);
+            assert.isDefined(config.queue);
+            assert.isDefined(config.prefetchCount);
+            assert.isDefined(config.messageReprocessLimit);
+            assert.isDefined(config.initTimeout);
         });
     });
 });

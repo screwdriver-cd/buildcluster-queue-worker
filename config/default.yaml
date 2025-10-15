@@ -247,6 +247,8 @@ rabbitmq:
     retryQueueEnabled: false
     # Exchange / router name for rabbitmq
     exchange: build
+    # build pod initialization timeout in minutes
+    initTimeout: "5"
 httpd:
     # Port to listen on
     port: 80

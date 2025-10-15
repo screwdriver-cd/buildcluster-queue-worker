@@ -16,11 +16,13 @@ const {
     cacheStrategy,
     cachePath,
     retryQueue,
-    retryQueueEnabled
+    retryQueueEnabled,
+    initTimeout
 } = config.getConfig();
 const { spawn } = threads;
 const CACHE_STRATEGY_DISK = 'disk';
 let channelWrapper;
+const INIT_TIMEOUT = initTimeout * 60 * 1000; // milliseconds
 
 /**
  * onMessage consume messages in batches, once its available in the queue. channelWrapper has in-built back pressure
@@ -103,18 +105,68 @@ const onMessage = data => {
                 }
             }
 
+            let timeoutWarningLogged = false;
+            let timeoutTimer = null;
+
+            if (jobType === 'start') {
+                timeoutTimer = setTimeout(async () => {
+                    if (!timeoutWarningLogged) {
+                        timeoutWarningLogged = true;
+                        const timeoutMessage = `Build initialization timeout exceeded (${initTimeout}min) for ${job}`;
+
+                        logger.error(timeoutMessage);
+
+                        // Update build statusmessage only to show delayed initialization
+                        try {
+                            await helper.updateBuildStatusAsync(
+                                buildConfig,
+                                undefined,
+                                'Build initialization delayed - pod creation taking longer than expected'
+                            );
+                            logger.info(`Build status updated with delay warning for build ${buildId}`);
+                        } catch (err) {
+                            logger.error(
+                                `Failed to update build status with delay warning for build:${buildId}:${err}`
+                            );
+                        }
+
+                        // Push to retry queue for verification and potential failure
+                        // This allows verify to check pod status and fail if still pending
+                        logger.info(`Pushing ${job} to retry queue for verification after timeout`);
+                        retryQueueLib.push(buildConfig, buildId);
+                    }
+                }, INIT_TIMEOUT);
+            }
+
             thread
                 .send([jobType, buildConfig, job])
                 .on('message', successful => {
                     logger.info(`acknowledge, job completed for ${job}, result: ${successful}`);
+
                     if (!successful && jobType === 'start') {
-                        // push to retry only for start jobs
+                        // Pod failed immediately (status check returned false)
+                        // Clear timeout and push to retry queue for immediate verification
+                        if (timeoutTimer) {
+                            clearTimeout(timeoutTimer);
+                        }
                         retryQueueLib.push(buildConfig, buildId);
+                    } else if (successful && jobType === 'start') {
+                        // Pod created successfully - DON'T clear timeout
+                        // Let the timeout fire to verify pod eventually started
+                        // This handles pods that get stuck in pending after creation
+                        logger.info(`Timeout remains active for ${job}, will verify after ${initTimeout}min`);
+                    } else if (timeoutTimer) {
+                        // For non-start jobs (stop, verify), or other cases, clear timeout normally
+                        clearTimeout(timeoutTimer);
                     }
+
                     channelWrapper.ack(data);
                     thread.kill();
                 })
                 .on('error', async error => {
+                    if (timeoutTimer) {
+                        clearTimeout(timeoutTimer);
+                    }
                     thread.kill();
                     if (['403', '404'].includes(error.message.substring(0, 3))) {
                         channelWrapper.ack(data);
@@ -236,7 +288,7 @@ const listen = async () => {
         const queueFn = [channel.checkQueue(queue), channel.prefetch(prefetchCount), channel.consume(queue, onMessage)];
 
         if (retryQueueEnabled) {
-            queueFn.concat([channel.checkQueue(retryQueue), channel.consume(retryQueue, onRetryMessage)]);
+            queueFn.push(channel.checkQueue(retryQueue), channel.consume(retryQueue, onRetryMessage));
         }
 
         return Promise.all(queueFn);

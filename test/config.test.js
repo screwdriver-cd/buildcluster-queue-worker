@@ -50,7 +50,8 @@ describe('config test', () => {
             cachePath: configDef.ecosystem.cache.path,
             retryQueue: configDef.rabbitmq.retryQueue,
             retryQueueEnabled: configDef.rabbitmq.retryQueueEnabled,
-            exchange: configDef.rabbitmq.exchange
+            exchange: configDef.rabbitmq.exchange,
+            initTimeout: configDef.rabbitmq.initTimeout || 5 // default value
         });
     });
 });

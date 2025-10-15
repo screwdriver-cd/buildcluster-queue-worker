@@ -363,6 +363,8 @@ rabbitmq:
     retryQueueEnabled: RABBITMQ_RETRYQUEUE_ENABLED
     # Exchange / router name for rabbitmq
     exchange: RABBITMQ_EXCHANGE
+    # build pod initialization timeout
+    initTimeout: RABBITMQ_BUILD_INIT_TIMEOUT
 httpd:
   # Port to listen on
   port: PORT
