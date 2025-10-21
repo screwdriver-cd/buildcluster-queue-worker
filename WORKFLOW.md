@@ -1,166 +1,350 @@
-# Build Start Workflow - Detailed Flow
+# Build Messages Processing Workflow
 
-## Main Queue Processing
+## Overview
+
+This document describes the **queue-based retry mechanism** for build pod initialization with **progressive backoff** and **smart status distinction**. The system uses RabbitMQ's native message TTL and dead-letter exchange features with per-message TTL for variable delays
+and simulate delayed queue behavior for message verification.
+
+### Key Features
+
+- **Status Code Distinction**: Separates pod scheduling issues (`waiting`) from image pull delays (`initializing`)
+- **Progressive Backoff**: Increasing retry delays for large image downloads (30s → 80s)
+- **Timeout Tracking**: Only pod scheduling delays count against the 3-minute SLO
+- **Per-Message TTL**: Allows different retry delays for different scenarios
+- **Two-Queue Pattern**: Wait queue (`sdRetryQueue-wait`) with TTL → Ready queue (`sdRetryQueue`)
+
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ MAIN QUEUE: Message Processing                                              │
+│ QUEUE TOPOLOGY                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    queue-service (Redis/Resque)
+            │
+            ▼
+    ┌───────────────────────────────────────────────────────┐
+    │ RabbitMQ Exchange: "build" (topic)                    │
+    └───────────────────────────────────────────────────────┘
+            │
+            ├─────────────────┬──────────────────┬──────────────────┬──────────────────┐
+            │                 │                  │                  │                  │
+            ▼                 ▼                  ▼                  ▼                  ▼
+    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+    │ sd           │  │ sdRetry      │  │sdRetry-wait  │  │ sddlr        │  │ default      │
+    │ (main queue) │  │ (ready queue)│  │ (wait queue) │  │ (delay/retry)│  │ (catch-all)  │
+    └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘
+    │                 │                  │                  │
+    │ start/stop      │ verify           │ per-msg TTL      │ delay 5s
+    │ TTL: 8hr        │ NO queue TTL     │ 30s-80s          │ then → sd
+    │ DLX → gq1dlr    │ (consumers)      │ DLX → sdretry   │
+    └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘
+                                         │
+                                         │ (after per-msg TTL expires)
+                                         └────────► sdretry
+```
+
+## Main Queue Processing (sd)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ MAIN QUEUE: Start/Stop Job Processing                                       │
 └─────────────────────────────────────────────────────────────────────────────┘
 
     ┌──────────────────┐
     │ Receive Message  │
+    │ from sd          │
     │ (prefetch=20)    │
     └────────┬─────────┘
              │
-             ├─────────────────────────────────────────────────────────┐
-             │                                                         │
-    ┌────────▼─────────┐                                    ┌─────────▼─────────┐
-    │ Start Timeout    │                                    │ Spawn Thread      │
-    │ (5 min timer)    │                                    │ Call _start()     │
-    └──────────────────┘                                    └─────────┬─────────┘
-             │                                                         │
-             │                                              ┌──────────▼──────────┐
-             │                                              │ Try Create K8s Pod  │
-             │                                              │ (POST to K8s API)   │
-             │                                              └──────────┬──────────┘
-             │                                                         │
-             │                                    ┌────────────────────┼───────────────┐
-             │                                    │                    │               │
-             │                         ┌──────────▼─────────┐  ┌──────▼─────────────────────┐
-             │                         │ Success (201)      │  │ API Error (500/503/etc)    │
-             │                         │ Pod Created!       │  │ Network error, K8s down    │
-             │                         └──────────┬─────────┘  └──────┬─────────────────────┘
-             │                                    │                    │
-             │                         ┌──────────▼──────────────┐  ┌─▼──────────────────────┐
-             │                         │ Check Pod Status        │  │ THROW EXCEPTION        │
-             │                         │ (GET pod/status)        │  │ "Failed to create pod" │
-             │                         └──────────┬──────────────┘  └─┬──────────────────────┘
-             │                                    │                    │
-             │                      ┌─────────────┼─────────────┐      │ .on('error')
-             │                      │             │             │      │
-             │           ┌──────────▼─────┐  ┌───▼───┐  ┌─────▼──────┐▼──────────────────┐
-             │           │ Pod Status:    │  │ Pod:  │  │ Pod Status:││ Retry < 5?       │
-             │           │ pending/running│  │failed │  │ unknown    ││ YES: NACK (retry)│
-             │           └──────────┬─────┘  └───┬───┘  └─────┬──────┘│ NO: FAILURE+ACK  │
-             │                      │            │             │       └──────────────────┘
-             │           ┌──────────▼─────┐  ┌───▼─────────────▼───┐
-             │           │ Return TRUE    │  │ Return FALSE         │
-             │           │ "Pod OK"       │  │ "Status check failed"│
-             │           └──────────┬─────┘  └───┬──────────────────┘
-             │                      │            │
-             │           ┌──────────▼─────┐  ┌───▼──────────────┐
-             │           │ ACK message    │  │ Clear timeout    │
-             │           │ (free prefetch)│  │ ACK message      │
-             │           └──────────┬─────┘  │ Push to RETRY    │
-             │                      │        │ QUEUE (verify)   │
-             │           ┌──────────▼─────┐  └───┬──────────────┘
-             │           │ DON'T clear    │      │
-             │           │ timeout!       │      │
-             │           │ (keep monitor) │      │
-             │           └──────────┬─────┘      │
-             │                      │            │
-             │◄─────────────────────┘            │
-             │                                   │
-    ┌────────▼─────────┐                        │
-    │ Wait 5 minutes   │                        │
-    └────────┬─────────┘                        │
-             │                                   │
-    ┌────────▼───────────────────────┐          │
-    │ Timeout Fires!                 │          │
-    │ Update build statusmessage:    │          │
-    │ "Build initialization delayed" │          │
-    └────────┬───────────────────────┘          │
-             │                                   │
-    ┌────────▼─────────┐                        │
-    │ Push to          │◄───────────────────────┘
-    │ RETRY QUEUE      │
+             ▼
+    ┌──────────────────┐
+    │ Parse Message    │
+    │ jobType: start   │
+    │         stop     │
+    │         clear    │
     └────────┬─────────┘
              │
-             │
-┌────────────▼─────────────────────────────────────────────────────────────────┐
-│ RETRY QUEUE: Pod Verification                                                │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-    ┌────────────────────┐
-    │ Receive Message    │
-    │ from Retry Queue   │
-    └─────────┬──────────┘
-              │
-    ┌─────────▼──────────┐
-    │ Spawn Thread       │
-    │ Call _verify()     │
-    └─────────┬──────────┘
-              │
-    ┌─────────▼────────────────┐
-    │ Try Get Pod Status       │
-    │ (GET pods?labelSelector) │
-    └─────────┬────────────────┘
-              │
-    ┌─────────┼────────────────────────────┐
-    │         │                            │
-┌───▼─────────────┐              ┌─────────▼────────────────┐
-│ Success         │              │ API Error (K8s API down) │
-│ Got pod status  │              │ Network issue            │
-└───┬─────────────┘              └─────────┬────────────────┘
-    │                                      │
-    │                            ┌─────────▼────────────────┐
-    │                            │ THROW EXCEPTION          │
-    │                            │ .on('error')             │
-    │                            └─────────┬────────────────┘
-    │                                      │
-    │                            ┌─────────▼────────────────┐
-    │                            │ Retry < 5?               │
-    │                            │ YES: NACK (retry verify) │
-    │                            │ NO: FAILURE + ACK        │
-    │                            └──────────────────────────┘
-    │
-    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ Check Pod Status & Container Waiting Reason                     │
-└─────────┬────────────────────────────────────────────────────────┘
-          │
-    ┌─────┴──────────┬────────────────┬───────────────┬─────────────────┐
-    │                │                │               │                 │
-┌───▼────────────┐  ┌▼──────────┐  ┌─▼────────────┐ ┌▼───────────────┐ ┌▼──────────────┐
-│ Pod Status:    │  │ Pod:      │  │ Pod:         │ │ Pod:           │ │ Pod:          │
-│ running/       │  │ failed/   │  │ pending +    │ │ pending +      │ │ pending +     │
-│ succeeded      │  │ unknown   │  │ ErrImagePull │ │ CrashLoopBack  │ │ PodInitializing│
-└───┬────────────┘  └┬──────────┘  └─┬────────────┘ └┬───────────────┘ └┬──────────────┘
-    │                │                │               │                  │
-┌───▼────────────┐  ┌▼────────────────────────────────▼──────────────────▼──────────────┐
-│ Return EMPTY   │  │ Return ERROR MESSAGE                                               │
-│ (success)      │  │ "Build failed to start..."                                         │
-└───┬────────────┘  └┬───────────────────────────────────────────────────────────────────┘
-    │                │                                   │
-┌───▼────────────┐  ┌▼────────────────┐      ┌─────────▼──────────┐
-│ ACK message    │  │ Update build to │      │ Return EMPTY       │
-│ (build OK)     │  │ FAILURE         │      │ (allow more time   │
-└────────────────┘  │ ACK message     │      │ for image pull)    │
-                    └─────────────────┘      └─────────┬──────────┘
-                                                       │
-                                             ┌─────────▼──────────┐
-                                             │ ACK message        │
-                                             │ (pod still healthy │
-                                             │ may take 10+ min)  │
-                                             └────────────────────┘
+             ├──────────────────────────────────────┐
+             │                                      │
+    ┌────────▼─────────┐                  ┌────────▼─────────┐
+    │ jobType=start    │                  │ jobType=stop     │
+    │                  │                  │ jobType=clear    │
+    └────────┬─────────┘                  └────────┬─────────┘
+             │                                      │
+    ┌────────▼─────────┐                  ┌────────▼─────────┐
+    │ Spawn Thread     │                  │ Spawn Thread     │
+    │ Call _start()    │                  │ Execute job      │
+    └────────┬─────────┘                  └────────┬─────────┘
+             │                                     │
+    ┌────────▼────────────────┐                    │
+    │ Create K8s Pod          │                    │
+    │ (POST to K8s API)       │                    │
+    └────────┬────────────────┘                    │
+             │                                     │
+    ┌────────┼──────────────────┐                  │
+    │        │                  │                  │
+    ▼        ▼                  ▼                  │
+┌─────────────┐  ┌──────────────────┐              │
+│ Success     │  │ K8s API Error    │              │
+│ (201)       │  │ Network timeout  │              │ 
+└─────┬───────┘  └──────────┬───────┘              │
+      │                     │                      │
+      │                     ▼                      │
+      │          ┌────────────────────┐            │
+      │          │ .on('error')       │            │
+      │          │ retryCount < 3?    │            │
+      │          │ YES: NACK (retry)  │            │
+      │          │ NO: FAILURE + ACK  │            │
+      │          └────────────────────┘            │
+      │                                            │
+      ▼                                            │
+┌──────────────────────────────┐                   │
+│ Pod created successfully     │                   │
+│ .on('message')               │                   │
+└──────────┬───────────────────┘                   │
+           │                                       │
+           ▼                                       │
+┌──────────────────────────────┐                   │
+│ ACK message immediately      │◄──────────────────┘
+│ (free up prefetch slot)      │
+└──────────┬───────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Push to sdretry-wait for verification                      │
+│ - Add header: x-build-start-time = Date.now()               │
+│ - Add header: x-retry-count = 0                             │
+│ - Set per-message TTL: 30 seconds (expiration property)     │
+│ - Publishes to: sdretry-wait (not sdretry directly!)      │
+└──────────┬──────────────────────────────────────────────────┘
+           │
+           │
+           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ WAIT QUEUE: sdretry-wait (waits for TTL to expire)         │
+│ - Message sits here for TTL duration (30s default)          │
+│ - When TTL expires → Dead-letter to sdretry                │
+└─────────────────────────────────────────────────────────────┘
+           │
+           │ (after TTL expires)
+           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ RETRY QUEUE: sdretry (ready for consumption)               │
+│ - Consumer picks up message for pod verification            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Key Points
+## Retry Queue Processing (sdretry)
 
-### Main Queue Retries (NACK):
-- **When**: Pod creation throws exception (K8s API error, network issue)
-- **Why**: Pod was never created, safe to retry
-- **How many**: Up to 5 times via RabbitMQ requeue
-- **After max retries**: Update build to FAILURE and ACK
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ RETRY QUEUE: Pod Verification & Status Check                                │
+└─────────────────────────────────────────────────────────────────────────────┘
 
-### Retry Queue Retries (NACK):
-- **When**: _verify() throws exception (can't get pod status from K8s)
-- **Why**: Transient API issue, pod might be fine
-- **How many**: Up to 5 times via RabbitMQ requeue
-- **After max retries**: Update build to FAILURE and ACK
+    ┌──────────────────────────────────┐
+    │ Consumer picks up message        │
+    │ from sdretry                    │
+    │ Headers: x-build-start-time      │
+    │          x-retry-count           │
+    └──────────┬───────────────────────┘
+               │
+               ▼
+    ┌──────────────────────────────────┐
+    │ Check retry count                │
+    │ retryCount = x-retry-count || 0  │
+    │ if retryCount >= 6: FAIL         │
+    └──────────┬───────────────────────┘
+               │
+               ▼
+    ┌──────────────────────────────────┐
+    │ Spawn Thread                     │
+    │ Call _verify()                   │
+    └──────────┬───────────────────────┘
+               │
+    ┌──────────▼──────────────┐
+    │ Get Pod Status          │
+    │ (GET pods?labelSelector)│
+    └──────────┬──────────────┘
+               │
+    ┌──────────┼────────────────────────────────┐
+    │          │                                │
+    ▼          ▼                                ▼
+┌─────────────────────┐  ┌──────────────────────────┐
+│ Status: 'waiting'   │  │ Status: 'initializing'   │
+│ (pod not scheduled) │  │ (pod pulling image)      │
+└──────────┬──────────┘  └──────────┬───────────────┘
+           │                        │
+           ▼                        ▼
+┌────────────────────────────────────────────────────┐
+│ Check Init Timeout                                 │
+│ ONLY for 'waiting'                                 │
+│ elapsed = now - x-build-start-time                 │
+│ if elapsed >= 3min: TIMEOUT                        │
+└────────────┬───────────────────────────────────────┘
+             │
+    ┌────────┼─────────┐
+    │        │         │
+    ▼        ▼         ▼
+┌─────────────┐  ┌──────────────┐
+│ Timeout!    │  │ Within time  │
+│ elapsed>=3m │  │ elapsed<3m   │
+└─────┬───────┘  └──────┬───────┘
+      │                 │
+      ▼                 ▼
+┌──────────────────┐  ┌────────────────────────────────┐
+│ FAIL BUILD       │  │ Retry with appropriate delay   │
+│ "Pod scheduling  │  │                                │
+│ timeout exceeded"│  │ 'waiting': Fixed 30s delay     │
+│ ACK + Stop       │  │ 'initializing': Progressive    │
+└──────────────────┘  │   30s + (retryCount × 10s)     │
+                      └─────────┬──────────────────────┘
+                                │
+                                ▼
+                      ┌───────────────────────────────┐
+                      │ ACK current message           │
+                      │ Publish to sdretry-wait      │
+                      │ with new TTL (expiration)     │
+                      │ and x-retry-count += 1        │
+                      └───────────┬───────────────────┘
+                                  │
+                                  ▼
+                      ┌───────────────────────────────┐
+                      │ Message waits in sdretry-wait│
+                      │ for TTL duration              │
+                      │ Then dead-letter → sdretry   │
+                      └───────────────────────────────┘
 
-### No Retries (ACK immediately):
-- Pod created successfully (pending/running status) → main queue
-- Pod status check failed (pod exists but failed/unknown) → main queue → retry queue
-- Verify detects failed pod (returns error message) → retry queue
-- Verify detects healthy pod (returns empty) → retry queue
+Other status codes:
+    '' (empty string)  → ACK (success, pod running)
+    Error message      → ACK + Update build → FAILURE
+```
+
+## Pod Status Decision Tree
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ POD VERIFICATION LOGIC (_verify in executor-k8s/index.js)                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Check Pod Status
+         │
+    ┌────┴──────────────────────────────────────────────────┐
+    │                                                       │
+    ▼                                                       ▼
+Container Waiting Reason?                              Pod Phase?
+    │                                                       │
+    ├─ ErrImagePull ──────────┐                             │
+    ├─ ImagePullBackOff ───────┼────► FAIL FAST             │
+    ├─ InvalidImageName ────────┘     "Check your image"    │
+    │                                                       │
+    ├─ CrashLoopBackOff ───────┐                            │
+    ├─ CreateContainerError ────┼────► FAIL FAST            │
+    ├─ StartError ──────────────┘     "Contact admin"       │
+    │                                                       │
+    └─ (none/other) ────────────────────────────────────────┼──► Check phase
+                                                            │
+                                                            ├─ Running ──────► SUCCESS ('')
+                                                            ├─ Succeeded ────► SUCCESS ('')
+                                                            ├─ Failed ───────► FAILURE (error msg)
+                                                            ├─ Unknown ──────► FAILURE (error msg)
+                                                            │
+                                                            └─ Pending ──┐
+                                                                         │
+                                                         ┌───────────────▼──────────────┐
+                                                         │ Has nodeName assigned?       │
+                                                         └───────────────┬──────────────┘
+                                                                         │
+                                                    ┌────────────────────┼────────────────────┐
+                                                    │                    │                    │
+                                                    ▼                    ▼                    ▼
+                                            ┌───────────────┐  ┌─────────────────┐  ┌──────────────┐
+                                            │ nodeName: NO  │  │ nodeName: YES   │  │ Other cases  │
+                                            │ (not sched)   │  │ (initializing)  │  │              │
+                                            └───────┬───────┘  └────────┬────────┘  └──────┬───────┘
+                                                    │                   │                  │
+                                                    ▼                   ▼                  ▼
+                                            ┌───────────────┐  ┌─────────────────┐  ┌──────────────┐
+                                            │ Return        │  │ Return          │  │ Fail or      │
+                                            │ 'waiting'     │  │ 'initializing'  │  │ other status │
+                                            │               │  │                 │  │              │
+                                            │ (pod waiting  │  │ (pod pulling    │  └──────────────┘
+                                            │  to schedule) │  │  image)         │
+                                            └───────────────┘  └─────────────────┘
+
+Status Code Meanings:
+  - '' (empty string)    → Pod is running successfully
+  - 'waiting'            → Pod not scheduled (counts against 3min timeout)
+  - 'initializing'       → Pod pulling image (progressive backoff, no timeout)
+  - Error message string → Immediate failure (ImagePullBackOff, CrashLoopBackOff, etc.)
+```
+
+## Queue Configuration
+
+### RabbitMQ Queue Definitions
+
+**sdQueue** (main queue for consumers):
+```json
+{
+    "name": "sdQueue",
+    "vhost": "screwdriver",
+    "durable": true,
+    "auto_delete": false,
+    "arguments": {
+      "x-dead-letter-exchange": "build",
+      "x-dead-letter-routing-key": "sdQueuedlr",
+      "x-max-priority": 3,
+      "x-message-ttl": 28800000
+    }
+}
+```
+**sdQueue** (DLR queue for consumers, for messages that fail to be ACK'd):
+```json
+{
+    "name": "sdQueuedlr",
+    "vhost": "screwdriver",
+    "durable": true,
+    "auto_delete": false,
+    "arguments": {
+      "x-dead-letter-exchange": "build",
+      "x-dead-letter-routing-key": "sdQueue",
+      "x-max-priority": 3,
+      "x-message-ttl": 5000,
+      "x-queue-mode": "lazy"
+    }
+}
+```
+
+**sdRetryQueue** (ready queue for consumers):
+```json
+{
+    "name": "sdRetryQueue",
+    "vhost": "screwdriver",
+    "durable": true,
+    "auto_delete": false,
+    "arguments": {
+        "x-max-priority": 3,
+        "x-queue-type": "classic"
+    }
+}
+```
+
+**IMPORTANT**: `sdRetryQueue` must NOT have `x-message-ttl` to allow per-message TTL!
+
+**sdRetryQueue-wait** (wait queue with dead-letter routing):
+```json
+{
+    "name": "sdretry-wait",
+    "vhost": "screwdriver",
+    "durable": true,
+    "auto_delete": false,
+    "arguments": {
+        "x-dead-letter-exchange": "build",
+        "x-dead-letter-routing-key": "sdretry",
+        "x-max-priority": 3,
+        "x-queue-type": "classic"
+    }
+}
+```
+
+# TODO: Use Delayed queue plugin https://github.com/rabbitmq/rabbitmq-delayed-message-exchange

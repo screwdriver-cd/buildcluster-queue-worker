@@ -17,12 +17,13 @@ const {
     cachePath,
     retryQueue,
     retryQueueEnabled,
-    initTimeout
+    exchange,
+    initTimeout,
+    retryDelay
 } = config.getConfig();
 const { spawn } = threads;
 const CACHE_STRATEGY_DISK = 'disk';
 let channelWrapper;
-const INIT_TIMEOUT = initTimeout * 60 * 1000; // milliseconds
 
 /**
  * onMessage consume messages in batches, once its available in the queue. channelWrapper has in-built back pressure
@@ -105,68 +106,22 @@ const onMessage = data => {
                 }
             }
 
-            let timeoutWarningLogged = false;
-            let timeoutTimer = null;
-
-            if (jobType === 'start') {
-                timeoutTimer = setTimeout(async () => {
-                    if (!timeoutWarningLogged) {
-                        timeoutWarningLogged = true;
-                        const timeoutMessage = `Build initialization timeout exceeded (${initTimeout}min) for ${job}`;
-
-                        logger.error(timeoutMessage);
-
-                        // Update build statusmessage only to show delayed initialization
-                        try {
-                            await helper.updateBuildStatusAsync(
-                                buildConfig,
-                                undefined,
-                                'Build initialization delayed - pod creation taking longer than expected'
-                            );
-                            logger.info(`Build status updated with delay warning for build ${buildId}`);
-                        } catch (err) {
-                            logger.error(
-                                `Failed to update build status with delay warning for build:${buildId}:${err}`
-                            );
-                        }
-
-                        // Push to retry queue for verification and potential failure
-                        // This allows verify to check pod status and fail if still pending
-                        logger.info(`Pushing ${job} to retry queue for verification after timeout`);
-                        retryQueueLib.push(buildConfig, buildId);
-                    }
-                }, INIT_TIMEOUT);
-            }
-
             thread
                 .send([jobType, buildConfig, job])
                 .on('message', successful => {
                     logger.info(`acknowledge, job completed for ${job}, result: ${successful}`);
 
-                    if (!successful && jobType === 'start') {
-                        // Pod failed immediately (status check returned false)
-                        // Clear timeout and push to retry queue for immediate verification
-                        if (timeoutTimer) {
-                            clearTimeout(timeoutTimer);
-                        }
-                        retryQueueLib.push(buildConfig, buildId);
-                    } else if (successful && jobType === 'start') {
-                        // Pod created successfully - DON'T clear timeout
-                        // Let the timeout fire to verify pod eventually started
-                        // This handles pods that get stuck in pending after creation
-                        logger.info(`Timeout remains active for ${job}, will verify after ${initTimeout}min`);
-                    } else if (timeoutTimer) {
-                        // For non-start jobs (stop, verify), or other cases, clear timeout normally
-                        clearTimeout(timeoutTimer);
+                    if (jobType === 'start') {
+                        logger.info(`Pushing ${job} to retry queue for verification`);
+                        retryQueueLib.push(buildConfig, buildId).catch(err => {
+                            logger.error(`Failed to push to retry queue for ${job}: ${err.message}`);
+                        });
                     }
 
                     channelWrapper.ack(data);
                     thread.kill();
                 })
                 .on('error', async error => {
-                    if (timeoutTimer) {
-                        clearTimeout(timeoutTimer);
-                    }
                     thread.kill();
                     if (['403', '404'].includes(error.message.substring(0, 3))) {
                         channelWrapper.ack(data);
@@ -220,25 +175,155 @@ const onRetryMessage = async data => {
 
         logger.info(`processing ${job}`);
 
+        const buildStartTime =
+            data.properties.headers && data.properties.headers['x-build-start-time']
+                ? data.properties.headers['x-build-start-time']
+                : null;
+        const initTimeoutMs = initTimeout * 60 * 1000;
+
         if (typeof data.properties.headers !== 'undefined') {
             if (Object.keys(data.properties.headers).length > 0) {
-                retryCount = data.properties.headers['x-death'][0].count;
-                logger.info(`retrying ${retryCount}(${messageReprocessLimit}) for ${job}`);
+                if (data.properties.headers['x-retry-count']) {
+                    retryCount = data.properties.headers['x-retry-count'];
+                    logger.info(`retrying ${retryCount}(${messageReprocessLimit}) for ${job}`);
+                } else if (data.properties.headers['x-death']) {
+                    retryCount = data.properties.headers['x-death'][0].count;
+                    logger.info(`retrying ${retryCount}(${messageReprocessLimit}) for ${job}`);
+                }
             }
         }
+
         thread
             .send([jobType, buildConfig, job])
             .on('message', async message => {
                 logger.info(`acknowledge, job completed for ${job}, result: ${message}`);
-                if (message) {
+
+                if (message === 'waiting') {
+                    // Pod not scheduled - check timeout
+                    if (buildStartTime) {
+                        const elapsedMs = Date.now() - buildStartTime;
+                        const elapsedMinutes = (elapsedMs / 1000 / 60).toFixed(2);
+
+                        logger.info(
+                            `Build ${buildId} pod not scheduled yet, elapsed: ${elapsedMinutes}min, timeout: ${initTimeout}min`
+                        );
+
+                        if (elapsedMs >= initTimeoutMs) {
+                            // Timeout exceeded - fail immediately
+                            logger.error(
+                                `Build ${buildId} pod scheduling timeout exceeded: ${elapsedMinutes}min > ${initTimeout}min`
+                            );
+
+                            // metric for alerting
+                            logger.error(
+                                `[BUILD_SCHEDULING_FAILURE] buildId=${buildId} elapsed_minutes=${elapsedMinutes} ` +
+                                    `timeout_minutes=${initTimeout} retry_count=${retryCount}`
+                            );
+
+                            try {
+                                await helper.updateBuildStatusAsync(
+                                    buildConfig,
+                                    'FAILURE',
+                                    `Build failed to start within ${initTimeout} minutes (elapsed: ${elapsedMinutes} minutes). Pod was not scheduled - cluster may be out of capacity.`
+                                );
+                                logger.info(`Build ${buildId} marked as FAILURE due to pod scheduling timeout`);
+                            } catch (err) {
+                                logger.error(`Failed to update build status to FAILURE for build:${buildId}:${err}`);
+                            }
+                            channelWrapper.ack(data);
+                            thread.kill();
+
+                            return;
+                        }
+                    }
+
+                    // Timeout not exceeded - retry with delay
+                    if (retryCount >= messageReprocessLimit) {
+                        logger.error(
+                            `Build ${buildId} max retries (${messageReprocessLimit}) exceeded while waiting for pod scheduling`
+                        );
+
+                        // metric for alerting
+                        logger.error(
+                            `[BUILD_SCHEDULING_FAILURE] buildId=${buildId} elapsed_minutes=` +
+                                `${((Date.now() - buildStartTime) / 1000 / 60).toFixed(2)} max_retries=${retryCount}`
+                        );
+
+                        try {
+                            await helper.updateBuildStatusAsync(
+                                buildConfig,
+                                'FAILURE',
+                                'Build failed to start. Pod was not scheduled after maximum retries - cluster may be out of capacity.'
+                            );
+                            logger.info(`Build ${buildId} marked as FAILURE due to max retries`);
+                        } catch (err) {
+                            logger.error(`Failed to update build status to FAILURE for build:${buildId}:${err}`);
+                        }
+                        channelWrapper.ack(data);
+                    } else {
+                        const nextRetryCount = retryCount + 1;
+
+                        logger.info(
+                            `Build ${buildId} pod not scheduled, retrying ${nextRetryCount}/${messageReprocessLimit} in ${retryDelay}s`
+                        );
+                        channelWrapper.ack(data);
+
+                        // Re-publish to retry queue with incremented retry count
+                        retryQueueLib
+                            .push(buildConfig, buildId, retryDelay * 1000, nextRetryCount, buildStartTime)
+                            .catch(err => {
+                                logger.error(`Failed to re-publish to retry queue for ${job}: ${err.message}`);
+                            });
+                    }
+                } else if (message === 'initializing') {
+                    // Pod is initializing (pulling image) - use progressive backoff for large images
+                    if (retryCount >= messageReprocessLimit) {
+                        logger.error(
+                            `Build ${buildId} max retries (${messageReprocessLimit}) exceeded while pod initializing/pulling image`
+                        );
+                        try {
+                            await helper.updateBuildStatusAsync(
+                                buildConfig,
+                                'FAILURE',
+                                'Build failed to start. Pod initialization timeout - pod may be stuck pulling a large image or container startup is slow.'
+                            );
+                            logger.info(`Build ${buildId} marked as FAILURE due to max retries during initialization`);
+                        } catch (err) {
+                            logger.error(`Failed to update build status to FAILURE for build:${buildId}:${err}`);
+                        }
+                        channelWrapper.ack(data);
+                    } else {
+                        const nextRetryCount = retryCount + 1;
+
+                        const baseDelayMs = retryDelay * 1000;
+                        const incrementMs = 10000 * retryCount;
+                        const delayMs = baseDelayMs + incrementMs;
+                        const delaySec = (delayMs / 1000).toFixed(0);
+
+                        logger.info(
+                            `Build ${buildId} pod still initializing/pulling image, retrying ${nextRetryCount}/${messageReprocessLimit} in ${delaySec}s (progressive backoff)`
+                        );
+                        channelWrapper.ack(data);
+
+                        // Re-publish to retry queue with incremented retry count and progressive delay
+                        retryQueueLib.push(buildConfig, buildId, delayMs, nextRetryCount, buildStartTime).catch(err => {
+                            logger.error(`Failed to re-publish to retry queue for ${job}: ${err.message}`);
+                        });
+                    }
+                } else if (message && message !== '') {
+                    // Pod has failed - update build status and ack
                     try {
                         await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', message);
                         logger.info(`build status successfully updated for build ${buildId}`);
                     } catch (err) {
                         logger.error(`Failed to update build status to FAILURE for build:${buildId}:${err}`);
                     }
+                    channelWrapper.ack(data);
+                } else {
+                    // Empty string means pod is running successfully - ack
+                    logger.info(`pod started successfully for ${job}, acknowledging`);
+                    channelWrapper.ack(data);
                 }
-                channelWrapper.ack(data);
                 thread.kill();
             })
             .on('error', async error => {
@@ -288,7 +373,11 @@ const listen = async () => {
         const queueFn = [channel.checkQueue(queue), channel.prefetch(prefetchCount), channel.consume(queue, onMessage)];
 
         if (retryQueueEnabled) {
-            queueFn.push(channel.checkQueue(retryQueue), channel.consume(retryQueue, onRetryMessage));
+            queueFn.push(
+                channel.checkQueue(retryQueue),
+                channel.bindQueue(retryQueue, exchange, retryQueue),
+                channel.consume(retryQueue, onRetryMessage)
+            );
         }
 
         return Promise.all(queueFn);

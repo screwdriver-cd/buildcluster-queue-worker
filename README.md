@@ -11,15 +11,14 @@ npm install screwdriver-buildcluster-queue-worker
 
 ## Build Start Workflow
 
-The queue worker processes build start messages from RabbitMQ and manages pod lifecycle in Kubernetes.
+The queue worker processes build start messages from RabbitMQ and manages pod lifecycle in Kubernetes with **smart retry logic** and **progressive backoff**.
 
-> **See [WORKFLOW.md](WORKFLOW.md) for detailed workflow diagram with retry behavior**
-
+> **See [WORKFLOW.md](WORKFLOW.md) for detailed workflow diagram with retry behavior and queue configuration**
 ### Configuration
 
 - `prefetchCount`: 20 messages per worker (default)
-- `buildInitTimeout`: 5 minutes (default)
-- `messageReprocessLimit`: 5 retries in retry queue (default)
+- `initTimeout`: 5 minutes (default)
+- `messageReprocessLimit`: 6 retries in retry queue (default)
 
 ## Testing
 

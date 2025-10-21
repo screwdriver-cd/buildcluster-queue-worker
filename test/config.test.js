@@ -24,10 +24,13 @@ describe('config test', () => {
             },
             queue: 'test',
             prefetchCount: 20,
-            messageReprocessLimit: 3,
+            messageReprocessLimit: 6,
             retryQueue: 'sdRetryQueue',
             retryQueueEnabled: false,
-            exchange: 'build'
+            exchange: 'build',
+            initTimeout: 5,
+            retryDelayedQueue: 'sdRetryQueue-wait',
+            retryDelay: 30
         }
     };
 
@@ -51,7 +54,9 @@ describe('config test', () => {
             retryQueue: configDef.rabbitmq.retryQueue,
             retryQueueEnabled: configDef.rabbitmq.retryQueueEnabled,
             exchange: configDef.rabbitmq.exchange,
-            initTimeout: configDef.rabbitmq.initTimeout || 5 // default value
+            initTimeout: configDef.rabbitmq.initTimeout,
+            retryDelayedQueue: configDef.rabbitmq.retryDelayedQueue,
+            retryDelay: configDef.rabbitmq.retryDelay
         });
     });
 });
