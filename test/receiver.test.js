@@ -36,7 +36,7 @@ describe('rabbitmq message consumer', async () => {
             },
             queue: 'test',
             prefetchCount: 20,
-            messageReprocessLimit: 3,
+            messageReprocessLimit: 6,
             retryQueue: 'rq',
             retryQueueEnabled: true,
             initTimeout: 5

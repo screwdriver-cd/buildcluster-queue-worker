@@ -359,12 +359,16 @@ rabbitmq:
     messageReprocessLimit: RABBITMQ_MSG_REPROCESS_LIMIT
     # Queue name of the retry queue
     retryQueue: RABBITMQ_RETRYQUEUE
+    # Queue name of the delayed retry queue
+    retryDelayedQueue: RABBITMQ_RETRYDELAYEDQUEUE
     # retry queue enable/disable flag
     retryQueueEnabled: RABBITMQ_RETRYQUEUE_ENABLED
     # Exchange / router name for rabbitmq
     exchange: RABBITMQ_EXCHANGE
     # build pod initialization timeout
     initTimeout: RABBITMQ_BUILD_INIT_TIMEOUT
+    # delay between retries in seconds
+    retryDelay: RABBITMQ_RETRY_DELAY
 httpd:
   # Port to listen on
   port: PORT

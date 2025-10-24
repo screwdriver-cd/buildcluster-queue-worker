@@ -240,15 +240,19 @@ rabbitmq:
     # Prefetch count
     prefetchCount: "20"
     # Message reprocess limit - max retry for a message
-    messageReprocessLimit: "3"
+    messageReprocessLimit: "6" # short wait but more retries
     # Queue name of the retry queue
     retryQueue: sdRetryQueue
+    # Queue name of the delayed retry queue
+    retryDelayedQueue: sdRetryQueue-wait
     # retry queue enable/disable flag
     retryQueueEnabled: false
     # Exchange / router name for rabbitmq
     exchange: build
     # build pod initialization timeout in minutes
     initTimeout: "5"
+    # delay between retries in seconds
+    retryDelay: "30"
 httpd:
     # Port to listen on
     port: 80
