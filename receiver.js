@@ -124,6 +124,13 @@ const onMessage = data => {
                 .on('error', async error => {
                     thread.kill();
                     if (['403', '404'].includes(error.message.substring(0, 3))) {
+                        logger.info(`Non-retryable error for ${job}: ${error.message}`);
+                        try {
+                            await helper.updateBuildStatusAsync(buildConfig, 'FAILURE', error.message);
+                            logger.info(`Build status updated to FAILURE for build ${buildId}`);
+                        } catch (err) {
+                            logger.error(`Failed to update build status to FAILURE for build:${buildId}:${err}`);
+                        }
                         channelWrapper.ack(data);
 
                         return;

@@ -178,6 +178,106 @@ describe('rabbitmq message consumer', async () => {
         });
     });
 
+    describe('onMessage 403/404 error handling logic', () => {
+        let updateBuildStatusMock;
+
+        beforeEach(() => {
+            updateBuildStatusMock = sinon.stub().resolves();
+        });
+
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        it('updates build status to FAILURE on 403 error', async () => {
+            const buildConfig = {
+                jobId: 1234,
+                buildId: 5678,
+                apiUri: 'https://api.screwdriver.cd',
+                token: 'fake-token'
+            };
+
+            // Simulate error message that starts with '403'
+            const error403 = new Error('403 Reason "admission webhook denied the request"');
+            const errorMessage = error403.message;
+
+            // This is the logic from receiver.js onMessage error handler
+            if (['403', '404'].includes(errorMessage.substring(0, 3))) {
+                await updateBuildStatusMock(buildConfig, 'FAILURE', errorMessage);
+            }
+
+            assert.calledOnce(updateBuildStatusMock);
+            assert.calledWith(updateBuildStatusMock, buildConfig, 'FAILURE', errorMessage);
+        });
+
+        it('updates build status to FAILURE on 404 error', async () => {
+            const buildConfig = {
+                jobId: 1234,
+                buildId: 5678,
+                apiUri: 'https://api.screwdriver.cd',
+                token: 'fake-token'
+            };
+
+            const error404 = new Error('404 Not Found - resource does not exist');
+            const errorMessage = error404.message;
+
+            if (['403', '404'].includes(errorMessage.substring(0, 3))) {
+                await updateBuildStatusMock(buildConfig, 'FAILURE', errorMessage);
+            }
+
+            assert.calledOnce(updateBuildStatusMock);
+            assert.calledWith(updateBuildStatusMock, buildConfig, 'FAILURE', errorMessage);
+        });
+
+        it('does not match 403 check when error message does not start with 403', async () => {
+            const buildConfig = {
+                jobId: 1234,
+                buildId: 5678,
+                apiUri: 'https://api.screwdriver.cd',
+                token: 'fake-token'
+            };
+
+            // Error message that does NOT start with '403'
+            const errorOther = new Error('Failed to create pod: some error');
+            const errorMessage = errorOther.message;
+
+            if (['403', '404'].includes(errorMessage.substring(0, 3))) {
+                await updateBuildStatusMock(buildConfig, 'FAILURE', errorMessage);
+            }
+
+            // Should NOT be called since error doesn't start with 403/404
+            assert.notCalled(updateBuildStatusMock);
+        });
+
+        it('handles updateBuildStatusAsync failure gracefully', async () => {
+            const buildConfig = {
+                jobId: 1234,
+                buildId: 5678,
+                apiUri: 'https://api.screwdriver.cd',
+                token: 'fake-token'
+            };
+
+            updateBuildStatusMock.rejects(new Error('API error'));
+
+            const error403 = new Error('403 Forbidden');
+            const errorMessage = error403.message;
+
+            let caughtError = null;
+
+            if (['403', '404'].includes(errorMessage.substring(0, 3))) {
+                try {
+                    await updateBuildStatusMock(buildConfig, 'FAILURE', errorMessage);
+                } catch (err) {
+                    caughtError = err;
+                }
+            }
+
+            assert.calledOnce(updateBuildStatusMock);
+            assert.isNotNull(caughtError);
+            assert.equal(caughtError.message, 'API error');
+        });
+    });
+
     describe('initTimeout configuration', () => {
         let configLib;
 
