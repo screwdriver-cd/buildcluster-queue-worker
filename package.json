@@ -1,6 +1,6 @@
 {
   "name": "screwdriver-buildcluster-queue-worker",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "An amqp connection manager implementation that consumes jobs from Rabbitmq queue.",
   "main": "index.js",
   "scripts": {
